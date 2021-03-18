@@ -8,8 +8,12 @@ import {
   LinkOverlay,
   Button,
   Divider,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
 } from "@chakra-ui/react";
-import { FaWhatsapp, FaInstagram } from "react-icons/fa";
+import { FaWhatsapp, FaInstagram, FaBars } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -58,7 +62,53 @@ export default function HeaderApp() {
                 </LinkOverlay>
               </Link>
             </LinkBox>
-            <Flex align="flex-end" h="100px">
+            <Flex display={["flex", "flex", "none", "none", "none"]}>
+              <Menu placement="bottom-end">
+                <MenuButton
+                  as={IconButton}
+                  icon={<FaBars />}
+                  size="lg"
+                  colorScheme="purple"
+                  variant="outline"
+                  fontSize="2xl"
+                />
+                <MenuList shadow="lg" borderWidth="2px" borderColor="green.400">
+                  <MenuItem
+                    _active={{ bg: "purple.100", color: "white" }}
+                    _focus={{ bg: "transparent" }}
+                    _hover={{ bg: "purple.100", color: "white" }}
+                  >
+                    SORTEIOS
+                  </MenuItem>
+                  <MenuItem
+                    _active={{ bg: "purple.100", color: "white" }}
+                    _focus={{ bg: "transparent" }}
+                    _hover={{ bg: "purple.100", color: "white" }}
+                  >
+                    FALE CONOSCO
+                  </MenuItem>
+                  <MenuItem
+                    _focus={{ bg: "transparent", color: "white" }}
+                    _focus={{ bg: "transparent" }}
+                    _hover={{ bg: "purple.100", color: "white" }}
+                  >
+                    CRIAR SORTEIO
+                  </MenuItem>
+                  <MenuItem
+                    _hover={{ bg: "purple.100", color: "white" }}
+                    _focus={{ bg: "transparent" }}
+                    _hover={{ bg: "purple.100", color: "white" }}
+                  >
+                    CONDIÇÕES DE USO
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            </Flex>
+            <Flex
+              align="flex-end"
+              h="100px"
+              display={["none", "none", "flex", "flex", "flex"]}
+            >
               <Button
                 colorScheme="purple"
                 variant="link"

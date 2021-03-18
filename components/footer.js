@@ -25,6 +25,7 @@ import {
   SliderThumb,
   SliderTrack,
 } from "../components/sliders";
+import configs from "../configs/index";
 
 export default function FooterApp() {
   const [total, setTotal] = useState(27);
@@ -52,8 +53,7 @@ export default function FooterApp() {
         <Container maxW="7xl">
           <Carousel
             renderArrow={CustomArrow}
-            itemsToShow={4}
-            itemsToScroll={4}
+            breakPoints={configs.carousel.carousel}
             renderPagination={({ pages, activePage, onClick }) => {
               return (
                 <Flex mt={3}>
@@ -599,9 +599,16 @@ export default function FooterApp() {
           </Carousel>
 
           <Grid
-            templateColumns="repeat(auto-fit, minmax(280px, 280px))"
+            templateColumns={[
+              "1fr",
+              "1fr 1fr",
+              "1fr 1fr",
+              "1fr 1fr",
+              "repeat(auto-fit, minmax(280px, 280px))",
+            ]}
             gap="30px"
             justifyContent="center"
+            justifyItems="center"
             alignItems="start"
             mt={10}
           >
@@ -693,7 +700,13 @@ export default function FooterApp() {
           </Grid>
         </Container>
       </Box>
-      <Box bg="green.400" p={5} textAlign="center" color="white">
+      <Box
+        bg="green.400"
+        p={5}
+        textAlign="center"
+        color="white"
+        fontSize={["sm", "sm", "md", "md", "md"]}
+      >
         © 2021 - RIFA PMW, Todos os Direitos Reservados!
       </Box>
     </>
