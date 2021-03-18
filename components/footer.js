@@ -9,16 +9,12 @@ import {
   LinkBox,
   LinkOverlay,
   HStack,
-  Tooltip,
   Heading,
-  Divider,
-  Icon,
 } from "@chakra-ui/react";
 import Image from "next/image";
 import Link from "next/link";
 import Carousel from "react-elastic-carousel";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
-import { GiOnTarget } from "react-icons/gi";
 import {
   Slider,
   SliderFilledTrack,
@@ -114,7 +110,7 @@ export default function FooterApp() {
                 </SliderThumb>
               </Slider>
               <Box p={2} mt={-3} w="260px">
-                <Link href="/" passHref>
+                <Link href="/sorteio" passHref>
                   <LinkOverlay>
                     <Heading
                       color="purple.400"
@@ -179,7 +175,7 @@ export default function FooterApp() {
                 </SliderThumb>
               </Slider>
               <Box p={2} mt={-3} w="260px">
-                <Link href="/" passHref>
+                <Link href="/sorteio" passHref>
                   <LinkOverlay>
                     <Heading
                       color="purple.400"
@@ -244,7 +240,7 @@ export default function FooterApp() {
                 </SliderThumb>
               </Slider>
               <Box p={2} mt={-3} w="260px">
-                <Link href="/" passHref>
+                <Link href="/sorteio" passHref>
                   <LinkOverlay>
                     <Heading
                       color="purple.400"
@@ -309,7 +305,7 @@ export default function FooterApp() {
                 </SliderThumb>
               </Slider>
               <Box p={2} mt={-3} w="260px">
-                <Link href="/" passHref>
+                <Link href="/sorteio" passHref>
                   <LinkOverlay>
                     <Heading
                       color="purple.400"
@@ -374,7 +370,7 @@ export default function FooterApp() {
                 </SliderThumb>
               </Slider>
               <Box p={2} mt={-3} w="260px">
-                <Link href="/" passHref>
+                <Link href="/sorteio" passHref>
                   <LinkOverlay>
                     <Heading
                       color="purple.400"
@@ -439,7 +435,7 @@ export default function FooterApp() {
                 </SliderThumb>
               </Slider>
               <Box p={2} mt={-3} w="260px">
-                <Link href="/" passHref>
+                <Link href="/sorteio" passHref>
                   <LinkOverlay>
                     <Heading
                       color="purple.400"
@@ -504,7 +500,7 @@ export default function FooterApp() {
                 </SliderThumb>
               </Slider>
               <Box p={2} mt={-3} w="260px">
-                <Link href="/" passHref>
+                <Link href="/sorteio" passHref>
                   <LinkOverlay>
                     <Heading
                       color="purple.400"
@@ -569,7 +565,7 @@ export default function FooterApp() {
                 </SliderThumb>
               </Slider>
               <Box p={2} mt={-3} w="260px">
-                <Link href="/" passHref>
+                <Link href="/sorteio" passHref>
                   <LinkOverlay>
                     <Heading
                       color="purple.400"
