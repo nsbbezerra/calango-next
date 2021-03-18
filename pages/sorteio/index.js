@@ -9,21 +9,23 @@ import {
   Heading,
   HStack,
   Button,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
+  StatArrow,
+  StatGroup,
 } from "@chakra-ui/react";
 import Image from "next/image";
-import Link from "next/link";
 
 export default function Sorteio() {
   const [numbers, setNumbers] = useState([]);
   const [mynumbers, setMynumbers] = useState([]);
+  const [amount, setAmount] = useState(0);
 
   useEffect(() => {
     generateNumbers();
   }, []);
-
-  useEffect(() => {
-    console.log(mynumbers);
-  }, [mynumbers]);
 
   function generateNumbers() {
     let number = [];
@@ -38,6 +40,10 @@ export default function Sorteio() {
     }
     setNumbers(number);
   }
+
+  useEffect(() => {
+    setAmount(mynumbers.length * 100);
+  }, [mynumbers]);
 
   return (
     <>
@@ -68,11 +74,18 @@ export default function Sorteio() {
               Título da rifa
             </Heading>
             <Flex mt={3} direction={["column", "column", "row", "row", "row"]}>
-              <HStack fontSize="2xl" spacing="15px" mr={20}>
+              <HStack
+                fontSize={["lg", "xl", "2xl", "2xl", "2xl"]}
+                spacing="15px"
+                mr={20}
+              >
                 <Text>R$</Text>
-                <Text fontWeight="700">1000</Text>
+                <Text fontWeight="700">100</Text>
               </HStack>
-              <HStack fontSize="2xl" spacing="15px">
+              <HStack
+                fontSize={["lg", "xl", "2xl", "2xl", "2xl"]}
+                spacing="15px"
+              >
                 <Text>Data do Sorteio</Text>
                 <Text fontWeight="700">10/10/1000</Text>
               </HStack>
@@ -297,6 +310,15 @@ export default function Sorteio() {
               ))}
             </Grid>
           </Box>
+          <Stat mt={5} color="white">
+            <StatLabel>Total a Pagar</StatLabel>
+            <StatNumber>
+              {parseFloat(amount).toLocaleString("pt-br", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </StatNumber>
+          </Stat>
         </Container>
       </Box>
       <Box
