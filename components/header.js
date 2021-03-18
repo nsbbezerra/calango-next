@@ -403,6 +403,12 @@ export default function HeaderApp() {
                 />
               </FormControl>
             </Grid>
+            <Grid templateColumns="1fr" mt={3}>
+              <FormControl mb={3}>
+                <FormLabel>Email</FormLabel>
+                <Input focusBorderColor="purple.400" placeholder="Email" />
+              </FormControl>
+            </Grid>
             <Divider mt={7} mb={4} />
             <Grid
               templateColumns={[

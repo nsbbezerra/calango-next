@@ -517,6 +517,12 @@ export default function Sorteio() {
                 />
               </FormControl>
             </Grid>
+            <Grid templateColumns="1fr" mt={3}>
+              <FormControl mb={3}>
+                <FormLabel>Email</FormLabel>
+                <Input focusBorderColor="purple.400" placeholder="Email" />
+              </FormControl>
+            </Grid>
             <Divider mt={7} mb={4} />
             <Grid
               templateColumns={[
@@ -647,19 +653,28 @@ export default function Sorteio() {
         </ModalContent>
       </Modal>
 
-      <Modal isOpen={modalSend} onClose={() => setModalSent(false)} size="lg">
+      <Modal
+        isOpen={modalSend}
+        onClose={() => setModalSent(false)}
+        size="lg"
+        isCentered
+      >
         <ModalOverlay />
         <ModalContent borderWidth="3px" borderColor="green.400">
           <ModalHeader>Reserva de Número</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Text>Por favor verifique se seus dados estão corretos!</Text>
-            <FormControl mb={3}>
+            <FormControl mb={3} mt={3}>
               <FormLabel>Nome Completo</FormLabel>
               <Input
                 focusBorderColor="purple.400"
                 placeholder="Nome Completo"
               />
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Email</FormLabel>
+              <Input focusBorderColor="purple.400" placeholder="Email" />
             </FormControl>
             <FormControl mb={3}>
               <FormLabel>CPF</FormLabel>
