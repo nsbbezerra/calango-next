@@ -138,13 +138,17 @@ export default function HeaderApp() {
                   >
                     SORTEIOS
                   </MenuItem>
-                  <MenuItem
-                    _active={{ bg: "purple.100", color: "white" }}
-                    _focus={{ bg: "transparent" }}
-                    _hover={{ bg: "purple.100", color: "white" }}
-                  >
-                    FALE CONOSCO
-                  </MenuItem>
+                  <Link href="/faleconosco" passHref>
+                    <a>
+                      <MenuItem
+                        _active={{ bg: "purple.100", color: "white" }}
+                        _focus={{ bg: "transparent" }}
+                        _hover={{ bg: "purple.100", color: "white" }}
+                      >
+                        FALE CONOSCO
+                      </MenuItem>
+                    </a>
+                  </Link>
                   <MenuItem
                     _focus={{ bg: "transparent", color: "white" }}
                     _focus={{ bg: "transparent" }}
@@ -152,13 +156,17 @@ export default function HeaderApp() {
                   >
                     CRIAR SORTEIO
                   </MenuItem>
-                  <MenuItem
-                    _hover={{ bg: "purple.100", color: "white" }}
-                    _focus={{ bg: "transparent" }}
-                    _hover={{ bg: "purple.100", color: "white" }}
-                  >
-                    CONDIÇÕES DE USO
-                  </MenuItem>
+                  <Link href="/condicoesdeuso" passHref>
+                    <a>
+                      <MenuItem
+                        _hover={{ bg: "purple.100", color: "white" }}
+                        _focus={{ bg: "transparent" }}
+                        _hover={{ bg: "purple.100", color: "white" }}
+                      >
+                        CONDIÇÕES DE USO
+                      </MenuItem>
+                    </a>
+                  </Link>
                 </MenuList>
               </Menu>
             </Flex>
@@ -215,14 +223,18 @@ export default function HeaderApp() {
                   mr={3}
                   borderColor="purple.400"
                 />
-                <Button
-                  colorScheme="purple"
-                  variant="link"
-                  size="sm"
-                  _focus={{ outline: "none" }}
-                >
-                  FALE CONOSCO
-                </Button>
+                <Link href="/faleconosco" passHref>
+                  <a>
+                    <Button
+                      colorScheme="purple"
+                      variant="link"
+                      size="sm"
+                      _focus={{ outline: "none" }}
+                    >
+                      FALE CONOSCO
+                    </Button>
+                  </a>
+                </Link>
                 <Divider
                   orientation="vertical"
                   h="20px"
@@ -245,14 +257,18 @@ export default function HeaderApp() {
                   mr={3}
                   borderColor="purple.400"
                 />
-                <Button
-                  colorScheme="purple"
-                  variant="link"
-                  size="sm"
-                  _focus={{ outline: "none" }}
-                >
-                  CONDIÇÔES DE USO
-                </Button>
+                <Link href="/condicoesdeuso" passHref>
+                  <a>
+                    <Button
+                      colorScheme="purple"
+                      variant="link"
+                      size="sm"
+                      _focus={{ outline: "none" }}
+                    >
+                      CONDIÇÔES DE USO
+                    </Button>
+                  </a>
+                </Link>
               </Flex>
             </Flex>
           </Flex>
