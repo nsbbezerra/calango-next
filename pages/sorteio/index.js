@@ -33,16 +33,19 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
-  MenuItemOption,
-  MenuGroup,
-  MenuOptionGroup,
-  MenuIcon,
-  MenuCommand,
-  MenuDivider,
 } from "@chakra-ui/react";
+import {
+  Slider,
+  SliderFilledTrack,
+  SliderThumb,
+  SliderTrack,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+} from "../../components/sliders";
 import Image from "next/image";
 import { FaCheck, FaSave, FaWhatsapp } from "react-icons/fa";
-import { AiOutlineLogin } from "react-icons/ai";
+import { AiFillBank, AiOutlineLogin } from "react-icons/ai";
 import { MdKeyboardArrowUp } from "react-icons/md";
 import MaskedInput from "react-text-mask";
 import Link from "next/link";
@@ -57,6 +60,7 @@ export default function Sorteio() {
   const [modalSend, setModalSent] = useState(false);
   const [modalRegister, setModalRegister] = useState(false);
   const [modalLogin, setModalLogin] = useState(false);
+  const [modalPayment, setModalPayment] = useState(false);
 
   useEffect(() => {
     generateNumbers();
@@ -108,10 +112,39 @@ export default function Sorteio() {
     }
   }
 
+  function handlePayment() {
+    setModalSent(false);
+    setModalPayment(true);
+  }
+
   return (
     <>
       <HeaderApp />
       <Container maxW="6xl" mt={10}>
+        <Breadcrumb mb={10} fontSize={["xx-small", "md", "md", "md", "md"]}>
+          <BreadcrumbItem>
+            <Link href="/" passHref>
+              <a>
+                <BreadcrumbLink>Início</BreadcrumbLink>
+              </a>
+            </Link>
+          </BreadcrumbItem>
+
+          <BreadcrumbItem>
+            <Link passHref href="/sorteios">
+              <a>
+                <BreadcrumbLink>Sorteios</BreadcrumbLink>
+              </a>
+            </Link>
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            <Link passHref href="/sorteios">
+              <a>
+                <BreadcrumbLink>Nome da Rifa</BreadcrumbLink>
+              </a>
+            </Link>
+          </BreadcrumbItem>
+        </Breadcrumb>
         <Grid
           templateColumns={[
             "1fr",
@@ -121,6 +154,8 @@ export default function Sorteio() {
             "220px 1fr",
           ]}
           gap="40px"
+          justifyItems="center"
+          alignItems="center"
         >
           <Box w="220px" h="220px" overflow="hidden" rounded="lg">
             <Image
@@ -133,14 +168,27 @@ export default function Sorteio() {
             />
           </Box>
           <Box>
-            <Heading fontSize="3xl" isTruncated noOfLines={1}>
-              Título da rifa
-            </Heading>
-            <Flex mt={3} direction={["column", "column", "row", "row", "row"]}>
+            <Heading fontSize="3xl">Título da rifa</Heading>
+            <Slider aria-label="slider-ex-4" defaultValue={30}>
+              <SliderTrack bg="purple.100">
+                <SliderFilledTrack bg="purple.400" />
+              </SliderTrack>
+              <SliderThumb
+                boxSize={8}
+                borderWidth="1px"
+                borderColor="purple.100"
+                _focus={{ outline: "none" }}
+              >
+                <Text fontSize="x-small">70%</Text>
+              </SliderThumb>
+            </Slider>
+            <Flex
+              direction={["column", "column", "column", "row", "row"]}
+              justifyContent="space-between"
+            >
               <HStack
                 fontSize={["lg", "xl", "2xl", "2xl", "2xl"]}
                 spacing="15px"
-                mr={20}
               >
                 <Text>R$</Text>
                 <Text fontWeight="700">100</Text>
@@ -151,6 +199,13 @@ export default function Sorteio() {
               >
                 <Text>Data do Sorteio</Text>
                 <Text fontWeight="700">10/10/1000</Text>
+              </HStack>
+              <HStack
+                fontSize={["lg", "xl", "2xl", "2xl", "2xl"]}
+                spacing="15px"
+              >
+                <Text>Hora do Sorteio</Text>
+                <Text fontWeight="700">19:00</Text>
               </HStack>
             </Flex>
             <Box borderWidth="1px" mt={3} rounded="lg" p={4}>
@@ -653,12 +708,7 @@ export default function Sorteio() {
         </ModalContent>
       </Modal>
 
-      <Modal
-        isOpen={modalSend}
-        onClose={() => setModalSent(false)}
-        size="lg"
-        isCentered
-      >
+      <Modal isOpen={modalSend} onClose={() => setModalSent(false)} size="lg">
         <ModalOverlay />
         <ModalContent borderWidth="3px" borderColor="green.400">
           <ModalHeader>Reserva de Número</ModalHeader>
@@ -739,8 +789,11 @@ export default function Sorteio() {
             <Checkbox defaultIsChecked colorScheme="purple" mt={3}>
               Reservando seu(s) número(s), você declara que leu e concorda com
               nossos{" "}
-              <Link href="/" passHref>
-                <a style={{ color: "blue", textDecoration: "underline" }}>
+              <Link href="/condicoesdeuso" passHref>
+                <a
+                  target="_blank"
+                  style={{ color: "blue", textDecoration: "underline" }}
+                >
                   Termos de uso
                 </a>
               </Link>
@@ -777,7 +830,12 @@ export default function Sorteio() {
               </MenuList>
             </Menu>
 
-            <Button colorScheme="green" leftIcon={<FaCheck />} ml={3}>
+            <Button
+              colorScheme="green"
+              leftIcon={<FaCheck />}
+              ml={3}
+              onClick={() => handlePayment()}
+            >
               Concluir
             </Button>
           </ModalFooter>
@@ -825,6 +883,83 @@ export default function Sorteio() {
                 )}
               />
             </FormControl>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button colorScheme="purple" leftIcon={<AiOutlineLogin />}>
+              Login
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal
+        isOpen={modalPayment}
+        onClose={() => setModalPayment(false)}
+        size="2xl"
+      >
+        <ModalOverlay />
+        <ModalContent borderWidth="3px" borderColor="green.400">
+          <ModalHeader>
+            <Flex align="center">
+              <Icon as={AiFillBank} />
+              <Text ml={3}>Forma de Pagamento</Text>
+            </Flex>
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Grid
+              templateColumns={[
+                "1fr",
+                "1fr 1fr",
+                "1fr 1fr",
+                "1fr 1fr",
+                "1fr 1fr",
+              ]}
+              gap="15px"
+            >
+              <Box borderWidth="1px" rounded="lg">
+                <Box p={3}>
+                  <Image
+                    src="/img/pix.svg"
+                    width={150}
+                    height={30}
+                    layout="responsive"
+                  />
+                </Box>
+                <Divider />
+                <Box p={3}>
+                  <Text>
+                    Chave: CPF <strong>000.000.000-00</strong>
+                  </Text>
+                </Box>
+              </Box>
+              <Box borderWidth="1px" rounded="lg">
+                <Box p={3}>
+                  <Image
+                    src="/img/transferencia.svg"
+                    width={150}
+                    height={30}
+                    layout="responsive"
+                  />
+                </Box>
+                <Divider />
+                <Box p={3}>
+                  <Text>
+                    Agencia: <strong>0000-00</strong>
+                  </Text>
+                  <Text>
+                    Conta Corrente: <strong>0000-00</strong>
+                  </Text>
+                  <Text>
+                    Operação: <strong>0000-00</strong>
+                  </Text>
+                  <Text>
+                    Variação: <strong>0000-00</strong>
+                  </Text>
+                </Box>
+              </Box>
+            </Grid>
           </ModalBody>
 
           <ModalFooter>

@@ -131,13 +131,17 @@ export default function HeaderApp() {
                   ml={3}
                 />
                 <MenuList shadow="lg" borderWidth="2px" borderColor="green.400">
-                  <MenuItem
-                    _active={{ bg: "purple.100", color: "white" }}
-                    _focus={{ bg: "transparent" }}
-                    _hover={{ bg: "purple.100", color: "white" }}
-                  >
-                    SORTEIOS
-                  </MenuItem>
+                  <Link href="/sorteios" passHref>
+                    <a>
+                      <MenuItem
+                        _active={{ bg: "purple.100", color: "white" }}
+                        _focus={{ bg: "transparent" }}
+                        _hover={{ bg: "purple.100", color: "white" }}
+                      >
+                        SORTEIOS
+                      </MenuItem>
+                    </a>
+                  </Link>
                   <Link href="/faleconosco" passHref>
                     <a>
                       <MenuItem
@@ -208,14 +212,18 @@ export default function HeaderApp() {
                 </MenuList>
               </Menu>
               <Flex>
-                <Button
-                  colorScheme="purple"
-                  variant="link"
-                  size="sm"
-                  _focus={{ outline: "none" }}
-                >
-                  SORTEIOS
-                </Button>
+                <Link href="/sorteios" passHref>
+                  <a>
+                    <Button
+                      colorScheme="purple"
+                      variant="link"
+                      size="sm"
+                      _focus={{ outline: "none" }}
+                    >
+                      SORTEIOS
+                    </Button>
+                  </a>
+                </Link>
                 <Divider
                   orientation="vertical"
                   h="20px"
