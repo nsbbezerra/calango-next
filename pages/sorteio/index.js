@@ -907,7 +907,7 @@ export default function Sorteio() {
             </Flex>
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
+          <ModalBody pb={4}>
             <Grid
               templateColumns={[
                 "1fr",
@@ -929,8 +929,9 @@ export default function Sorteio() {
                 </Box>
                 <Divider />
                 <Box p={3}>
-                  <Text>
-                    Chave: CPF <strong>000.000.000-00</strong>
+                  <Text>Chave:</Text>
+                  <Text mt={2}>
+                    CPF <strong>000.000.000-00</strong>
                   </Text>
                 </Box>
               </Box>
@@ -960,13 +961,15 @@ export default function Sorteio() {
                 </Box>
               </Box>
             </Grid>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button colorScheme="purple" leftIcon={<AiOutlineLogin />}>
-              Login
+            <Text mt={3}>
+              Escolha uma das opções de pagamento acima depois entre em contato
+              com o administrador da rifa para confirmar o pagamento, use este
+              número:{" "}
+            </Text>
+            <Button colorScheme="green" leftIcon={<FaWhatsapp />} mt={3}>
+              (63) 99999-9999
             </Button>
-          </ModalFooter>
+          </ModalBody>
         </ModalContent>
       </Modal>
     </>
