@@ -119,6 +119,17 @@ export default function HeaderApp() {
                   >
                     FAÇA LOGIN
                   </MenuItem>
+                  <Link href="/meusdados" passHref>
+                    <a>
+                      <MenuItem
+                        _active={{ bg: "purple.100", color: "white" }}
+                        _focus={{ bg: "transparent" }}
+                        _hover={{ bg: "purple.100", color: "white" }}
+                      >
+                        MEUS DADOS
+                      </MenuItem>
+                    </a>
+                  </Link>
                 </MenuList>
               </Menu>
               <Menu placement="bottom-end">
@@ -213,6 +224,17 @@ export default function HeaderApp() {
                   >
                     FAÇA LOGIN
                   </MenuItem>
+                  <Link href="/meusdados" passHref>
+                    <a>
+                      <MenuItem
+                        _active={{ bg: "purple.100", color: "white" }}
+                        _focus={{ bg: "transparent" }}
+                        _hover={{ bg: "purple.100", color: "white" }}
+                      >
+                        MEUS DADOS
+                      </MenuItem>
+                    </a>
+                  </Link>
                 </MenuList>
               </Menu>
               <Flex>
