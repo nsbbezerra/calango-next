@@ -153,13 +153,17 @@ export default function HeaderApp() {
                       </MenuItem>
                     </a>
                   </Link>
-                  <MenuItem
-                    _focus={{ bg: "transparent", color: "white" }}
-                    _focus={{ bg: "transparent" }}
-                    _hover={{ bg: "purple.100", color: "white" }}
-                  >
-                    CRIAR SORTEIO
-                  </MenuItem>
+                  <Link href="/novosorteio" passHref>
+                    <a>
+                      <MenuItem
+                        _focus={{ bg: "transparent", color: "white" }}
+                        _focus={{ bg: "transparent" }}
+                        _hover={{ bg: "purple.100", color: "white" }}
+                      >
+                        CRIAR SORTEIO
+                      </MenuItem>
+                    </a>
+                  </Link>
                   <Link href="/condicoesdeuso" passHref>
                     <a>
                       <MenuItem
@@ -250,14 +254,18 @@ export default function HeaderApp() {
                   mr={3}
                   borderColor="purple.400"
                 />
-                <Button
-                  colorScheme="purple"
-                  variant="link"
-                  size="sm"
-                  _focus={{ outline: "none" }}
-                >
-                  CRIAR SORTEIO
-                </Button>
+                <Link href="/novosorteio" passHref>
+                  <a>
+                    <Button
+                      colorScheme="purple"
+                      variant="link"
+                      size="sm"
+                      _focus={{ outline: "none" }}
+                    >
+                      CRIAR SORTEIO
+                    </Button>
+                  </a>
+                </Link>
                 <Divider
                   orientation="vertical"
                   h="20px"

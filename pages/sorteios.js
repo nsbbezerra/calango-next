@@ -27,7 +27,7 @@ import { Icon } from "@chakra-ui/icon";
 import { Input } from "@chakra-ui/input";
 import { Select } from "@chakra-ui/select";
 import { Button } from "@chakra-ui/button";
-import { FaSearch, FaUserAlt } from "react-icons/fa";
+import { FaSearch, FaUserAlt, FaWhatsapp } from "react-icons/fa";
 import Image from "next/image";
 
 export default function Sorteios() {
@@ -230,7 +230,16 @@ export default function Sorteios() {
                 fontWeight="700"
                 color="white"
               >
-                CANCELADA
+                <Text>CANCELADA</Text>
+                <Text fontSize="xs">Contate o Administrador:</Text>
+                <Button
+                  colorScheme="whatsapp"
+                  leftIcon={<FaWhatsapp />}
+                  isFullWidth
+                  size="sm"
+                >
+                  (63) 99999-9999
+                </Button>
               </Box>
             </Flex>
             <Box w="220px" h="220px">
