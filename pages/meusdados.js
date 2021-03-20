@@ -52,11 +52,11 @@ export default function MeusDados() {
           templateColumns={[
             "1fr",
             "1fr",
-            "250px 1fr",
-            "250px 1fr",
-            "250px 1fr",
+            "200px 1fr",
+            "200px 1fr",
+            "200px 1fr",
           ]}
-          gap="40px"
+          gap="30px"
         >
           <Box borderWidth="1px" rounded="lg" h="min-content">
             <Flex p={3} align="center">
@@ -73,6 +73,7 @@ export default function MeusDados() {
                 variant="outline"
                 mb={5}
                 onClick={() => setPage("data")}
+                size="sm"
               >
                 Meus Dados
               </Button>
@@ -84,6 +85,7 @@ export default function MeusDados() {
                 variant="outline"
                 mb={3}
                 onClick={() => setPage("admin")}
+                size="sm"
               >
                 Como Administrador
               </Button>
@@ -91,12 +93,13 @@ export default function MeusDados() {
                 colorScheme="purple"
                 variant="outline"
                 onClick={() => setPage("client")}
+                size="sm"
               >
                 Como Participante
               </Button>
             </Flex>
           </Box>
-          <Box borderWidth="1px" rounded="lg" p={5}>
+          <Box borderWidth="1px" rounded="lg" p={3}>
             {page === "data" && <Dados />}
             {page === "admin" && <Admin />}
             {page === "client" && <Client />}
