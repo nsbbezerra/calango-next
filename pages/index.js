@@ -7,7 +7,7 @@ import {
   Heading,
   LinkBox,
   LinkOverlay,
-  HStack,
+  Image as ChakraImage,
   IconButton,
   Text,
   Divider,
@@ -48,19 +48,112 @@ export default function Home() {
     );
   };
 
+  const CustomArrowBanner = ({ type, onClick, isEdge }) => {
+    const pointer =
+      type === "PREV" ? <IoIosArrowBack /> : <IoIosArrowForward />;
+    return (
+      <IconButton
+        onClick={onClick}
+        disabled={isEdge}
+        aria-label="Search database"
+        icon={pointer}
+        fontSize="3xl"
+        variant="link"
+        colorScheme="green"
+        _focus={{ outline: "none" }}
+      />
+    );
+  };
+
   return (
     <>
       <HeaderApp />
-      <Container maxW="6xl" mt={10}>
-        <Box rounded="lg" overflow="hidden">
-          <Image
-            src="/img/banner.png"
-            width={4267}
-            height={784}
-            layout="responsive"
-            quality={100}
-          />
-        </Box>
+      <Container maxW="7xl" mt={10}>
+        <Carousel
+          itemsToShow={1}
+          enableAutoPlay
+          autoPlaySpeed={5000}
+          renderArrow={CustomArrowBanner}
+          pagination={false}
+        >
+          <LinkBox rounded="lg" overflow="hidden">
+            <Link passHref href="/sorteio">
+              <LinkOverlay>
+                <ChakraImage
+                  src="/img/banner.png"
+                  w="100%"
+                  h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
+                />
+              </LinkOverlay>
+            </Link>
+          </LinkBox>
+          <LinkBox rounded="lg" overflow="hidden">
+            <Link passHref href="/sorteio">
+              <LinkOverlay>
+                <ChakraImage
+                  src="/img/banner.png"
+                  w="100%"
+                  h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
+                />
+              </LinkOverlay>
+            </Link>
+          </LinkBox>
+          <LinkBox rounded="lg" overflow="hidden">
+            <Link passHref href="/sorteio">
+              <LinkOverlay>
+                <ChakraImage
+                  src="/img/banner.png"
+                  w="100%"
+                  h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
+                />
+              </LinkOverlay>
+            </Link>
+          </LinkBox>
+          <LinkBox rounded="lg" overflow="hidden">
+            <Link passHref href="/sorteio">
+              <LinkOverlay>
+                <ChakraImage
+                  src="/img/banner.png"
+                  w="100%"
+                  h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
+                />
+              </LinkOverlay>
+            </Link>
+          </LinkBox>
+          <LinkBox rounded="lg" overflow="hidden">
+            <Link passHref href="/sorteio">
+              <LinkOverlay>
+                <ChakraImage
+                  src="/img/banner.png"
+                  w="100%"
+                  h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
+                />
+              </LinkOverlay>
+            </Link>
+          </LinkBox>
+          <LinkBox rounded="lg" overflow="hidden">
+            <Link passHref href="/sorteio">
+              <LinkOverlay>
+                <ChakraImage
+                  src="/img/banner.png"
+                  w="100%"
+                  h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
+                />
+              </LinkOverlay>
+            </Link>
+          </LinkBox>
+          <LinkBox rounded="lg" overflow="hidden">
+            <Link passHref href="/sorteio">
+              <LinkOverlay>
+                <ChakraImage
+                  src="/img/banner.png"
+                  w="100%"
+                  h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
+                />
+              </LinkOverlay>
+            </Link>
+          </LinkBox>
+        </Carousel>
       </Container>
 
       <Box pt={10} pb={10} bg="purple.400" mt={10}>

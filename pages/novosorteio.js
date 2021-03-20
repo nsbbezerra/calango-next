@@ -35,6 +35,9 @@ import {
   Tooltip,
   useToast,
   HStack,
+  Stat,
+  StatLabel,
+  StatNumber,
 } from "@chakra-ui/react";
 import {
   Breadcrumb,
@@ -704,14 +707,44 @@ export default function NovoSorteio() {
 
           <Divider mt={5} mb={5} />
 
-          <Button
-            colorScheme="purple"
-            size="lg"
-            leftIcon={<FaSave />}
-            onClick={() => setModalConfirm(true)}
+          <Grid
+            templateColumns={[
+              "1fr",
+              "1fr 1fr",
+              "1fr 1fr",
+              "1fr 1fr",
+              "1fr 1fr",
+            ]}
+            gap="15px"
+            alignItems="center"
           >
-            Salvar Sorteio
-          </Button>
+            <Stat>
+              <StatLabel>Total a Pagar</StatLabel>
+              <StatNumber>
+                {parseFloat(30).toLocaleString("pt-br", {
+                  style: "currency",
+                  currency: "BRL",
+                })}
+              </StatNumber>
+            </Stat>
+            <Flex justify="flex-end">
+              <Button
+                colorScheme="purple"
+                w={[
+                  "100%",
+                  "max-content",
+                  "max-content",
+                  "max-content",
+                  "max-content",
+                ]}
+                size="lg"
+                leftIcon={<FaSave />}
+                onClick={() => setModalConfirm(true)}
+              >
+                Salvar Sorteio
+              </Button>
+            </Flex>
+          </Grid>
         </Box>
 
         <Box borderWidth="1px" rounded="lg" p={5} mt={10}>
