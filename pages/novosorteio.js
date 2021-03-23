@@ -88,7 +88,6 @@ export default function NovoSorteio() {
         focusBorderColor="purple.400"
         defaultValue={value}
         onClick={onClick}
-        w={["90vw", "30vw", "30vw", "21vw", "21vw"]}
       />
       <InputRightElement pointerEvents="none" children={<FaCalendarAlt />} />
     </InputGroup>
@@ -243,28 +242,32 @@ export default function NovoSorteio() {
 
                 <FormControl isRequired>
                   <FormLabel>Data do Sorteio</FormLabel>
-                  <DatePicker
-                    selected={startDate}
-                    onChange={(date) => setStartDate(date)}
-                    customInput={<CustomInputPicker />}
-                    locale="pt_br"
-                    dateFormat="dd/MM/yyyy"
-                  />
+                  <div className="customDatePickerWidth">
+                    <DatePicker
+                      selected={startDate}
+                      onChange={(date) => setStartDate(date)}
+                      customInput={<CustomInputPicker />}
+                      locale="pt_br"
+                      dateFormat="dd/MM/yyyy"
+                    />
+                  </div>
                 </FormControl>
 
                 <FormControl isRequired>
                   <FormLabel>Hora do Sorteio</FormLabel>
-                  <DatePicker
-                    selected={startDate}
-                    onChange={(date) => setStartDate(date)}
-                    customInput={<CustomInputPicker />}
-                    locale="pt_br"
-                    showTimeSelect
-                    showTimeSelectOnly
-                    timeIntervals={15}
-                    timeCaption="Horário"
-                    dateFormat="h:mm aa"
-                  />
+                  <div className="customDatePickerWidth">
+                    <DatePicker
+                      selected={startDate}
+                      onChange={(date) => setStartDate(date)}
+                      customInput={<CustomInputPicker />}
+                      locale="pt_br"
+                      showTimeSelect
+                      showTimeSelectOnly
+                      timeIntervals={15}
+                      timeCaption="Horário"
+                      dateFormat="h:mm aa"
+                    />
+                  </div>
                 </FormControl>
               </Grid>
 
