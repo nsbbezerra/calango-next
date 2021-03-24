@@ -7,6 +7,7 @@ const configs = {
       { width: 900, itemsToShow: 4, itemsToScroll: 4 },
     ],
   },
+  url: "http://localhost:4000",
 };
 
 export default configs;

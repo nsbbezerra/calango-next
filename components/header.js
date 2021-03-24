@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import {
   Box,
@@ -29,6 +29,9 @@ import {
   InputLeftElement,
   InputGroup,
   Select,
+  useToast,
+  FormErrorMessage,
+  MenuDivider,
 } from "@chakra-ui/react";
 import {
   FaWhatsapp,
@@ -40,11 +43,227 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import MaskedInput from "react-text-mask";
-import { AiOutlineLogin } from "react-icons/ai";
+import { AiOutlineLogin, AiOutlineLogout } from "react-icons/ai";
+
+import { useClient } from "../context/Clients";
+import api from "../configs/axios";
+
+import { useRouter } from "next/router";
 
 export default function HeaderApp() {
+  const { client, setClient } = useClient();
+  const toast = useToast();
+  const { push } = useRouter();
+
   const [modalLogin, setModalLogin] = useState(false);
   const [modalRegister, setModalRegister] = useState(false);
+
+  const [validators, setValidators] = useState([]);
+
+  const [name, setName] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [street, setStreet] = useState("");
+  const [number, setNumber] = useState("");
+  const [comp, setComp] = useState("");
+  const [district, setDistrict] = useState("");
+  const [cep, setCep] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+
+  const [loading, setLoading] = useState(false);
+
+  const [clientName, setClientName] = useState("Área do Cliente");
+
+  useEffect(() => {
+    handleLogin();
+  }, []);
+
+  useEffect(() => {
+    if (JSON.stringify(client) !== "{}") {
+      let namesplit = client.name.split(" ")[0];
+      setClientName(namesplit);
+    }
+  }, [client]);
+
+  async function handleLogin() {
+    const result = await localStorage.getItem("client");
+    let parse = JSON.parse(result);
+    if (parse) {
+      let namesplit = parse.name.split(" ")[0];
+      setClient(parse);
+      setClientName(namesplit);
+    }
+  }
+
+  function clear() {
+    setName("");
+    setCpf("");
+    setPhone("");
+    setEmail("");
+    setStreet("");
+    setNumber("");
+    setComp("");
+    setDistrict("");
+    setCep("");
+    setCity("");
+    setState("");
+  }
+
+  function handleValidator(path, message) {
+    let val = [];
+    let info = { path: path, message: message };
+    val.push(info);
+    setValidators(val);
+    const inpt = document.getElementById(path);
+    inpt.focus();
+  }
+
+  function showToast(message, status, title) {
+    toast({
+      title: title,
+      description: message,
+      status: status,
+      position: "top-right",
+    });
+  }
+
+  async function register() {
+    if (name === "") {
+      handleValidator("name", "Campo Obrigatório");
+      return false;
+    }
+    if (cpf === "") {
+      handleValidator("cpf", "Campo Obrigatório");
+      return false;
+    }
+    if (cpf.includes("_")) {
+      handleValidator("cpf", "Preencha corretamente");
+      return false;
+    }
+    if (phone === "") {
+      handleValidator("phone", "Campo Obrigatório");
+      return false;
+    }
+    if (phone.includes("_")) {
+      handleValidator("phone", "Preencha corretamente");
+      return false;
+    }
+    if (email === "") {
+      handleValidator("email", "Campo Obrigatório");
+      return false;
+    }
+    if (!email.includes("@") || !email.includes(".")) {
+      handleValidator(
+        "email",
+        "Preencha corretamente, precisa conter (@) e (.)"
+      );
+      return false;
+    }
+    if (street === "") {
+      handleValidator("street", "Campo Obrigatório");
+      return false;
+    }
+    if (number === "") {
+      handleValidator("number", "Campo Obrigatório");
+      return false;
+    }
+    if (district === "") {
+      handleValidator("district", "Campo Obrigatório");
+      return false;
+    }
+    if (cep === "") {
+      handleValidator("cep", "Campo Obrigatório");
+      return false;
+    }
+    if (cep.includes("_")) {
+      handleValidator("cep", "Insira um CEP válido");
+      return false;
+    }
+    if (city === "") {
+      handleValidator("city", "Campo Obrigatório");
+      return false;
+    }
+    if (state === "") {
+      handleValidator("state", "Campo Obrigatório");
+      return false;
+    }
+    setValidators([]);
+    setLoading(true);
+    try {
+      const response = await api.post("/clients", {
+        name,
+        cpf,
+        phone,
+        email,
+        street,
+        number,
+        comp,
+        district,
+        cep,
+        city,
+        state,
+      });
+      showToast(response.data.message, "success", "Sucesso");
+      setModalRegister(false);
+      setLoading(false);
+      clear();
+    } catch (error) {
+      setLoading(false);
+      if (error.message === "Network Error") {
+        alert(
+          "Sem conexão com o servidor, verifique sua conexão com a internet."
+        );
+        return false;
+      }
+      let mess = !error.response.data
+        ? "Erro no cadastro do cliente"
+        : error.response.data.message;
+      showToast(mess, "error", "Erro");
+    }
+  }
+
+  async function login() {
+    if (cpf === "") {
+      handleValidator("cpflogin", "Campo Obrigatório");
+      return false;
+    }
+    if (cpf.includes("_")) {
+      handleValidator("cpflogin", "Preencha corretamente");
+      return false;
+    }
+    setLoading(true);
+    try {
+      const response = await api.post("/login", { cpf });
+      await localStorage.setItem("client", JSON.stringify(response.data));
+      let namesplit = response.data.name.split(" ")[0];
+      setClientName(namesplit);
+      setLoading(false);
+      setClient(response.data);
+      clear();
+      setModalLogin(false);
+    } catch (error) {
+      setLoading(false);
+      if (error.message === "Network Error") {
+        alert(
+          "Sem conexão com o servidor, verifique sua conexão com a internet."
+        );
+        return false;
+      }
+      let mess = !error.response.data
+        ? "Erro no cadastro do cliente"
+        : error.response.data.message;
+      showToast(mess, "error", "Erro");
+    }
+  }
+
+  async function logout() {
+    await localStorage.removeItem("client");
+    setClientName("Área do Cliente");
+    setClient({});
+    push("/");
+  }
 
   return (
     <>
@@ -99,37 +318,52 @@ export default function HeaderApp() {
                   colorScheme="purple"
                   variant="outline"
                   fontSize="2xl"
-                >
-                  Área do Cliente
-                </MenuButton>
+                />
                 <MenuList shadow="lg" borderWidth="2px" borderColor="green.400">
-                  <MenuItem
-                    _active={{ bg: "purple.100", color: "white" }}
-                    _focus={{ bg: "transparent" }}
-                    _hover={{ bg: "purple.100", color: "white" }}
-                    onClick={() => setModalRegister(true)}
-                  >
-                    CADASTRE-SE
-                  </MenuItem>
-                  <MenuItem
-                    _active={{ bg: "purple.100", color: "white" }}
-                    _focus={{ bg: "transparent" }}
-                    _hover={{ bg: "purple.100", color: "white" }}
-                    onClick={() => setModalLogin(true)}
-                  >
-                    FAÇA LOGIN
-                  </MenuItem>
-                  <Link href="/meusdados" passHref>
-                    <a>
+                  {JSON.stringify(client) === "{}" ? (
+                    <>
                       <MenuItem
                         _active={{ bg: "purple.100", color: "white" }}
                         _focus={{ bg: "transparent" }}
                         _hover={{ bg: "purple.100", color: "white" }}
+                        onClick={() => setModalRegister(true)}
                       >
-                        MEUS DADOS
+                        CADASTRE-SE
                       </MenuItem>
-                    </a>
-                  </Link>
+                      <MenuItem
+                        _active={{ bg: "purple.100", color: "white" }}
+                        _focus={{ bg: "transparent" }}
+                        _hover={{ bg: "purple.100", color: "white" }}
+                        onClick={() => setModalLogin(true)}
+                      >
+                        FAÇA LOGIN
+                      </MenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <Link href={`/meusdados/${client.identify}`} passHref>
+                        <a>
+                          <MenuItem
+                            _active={{ bg: "purple.100", color: "white" }}
+                            _focus={{ bg: "transparent" }}
+                            _hover={{ bg: "purple.100", color: "white" }}
+                          >
+                            MEUS DADOS
+                          </MenuItem>
+                        </a>
+                      </Link>
+                      <MenuDivider />
+                      <MenuItem
+                        _active={{ bg: "purple.100", color: "white" }}
+                        _focus={{ bg: "transparent" }}
+                        _hover={{ bg: "purple.100", color: "white" }}
+                        icon={<AiOutlineLogout />}
+                        onClick={() => logout()}
+                      >
+                        SAIR
+                      </MenuItem>
+                    </>
+                  )}
                 </MenuList>
               </Menu>
               <Menu placement="bottom-end">
@@ -205,36 +439,53 @@ export default function HeaderApp() {
                   maxW="max-content"
                   mt={3}
                 >
-                  Área do Cliente
+                  {clientName}
                 </MenuButton>
                 <MenuList shadow="lg" borderWidth="2px" borderColor="green.400">
-                  <MenuItem
-                    _active={{ bg: "purple.100", color: "white" }}
-                    _focus={{ bg: "transparent" }}
-                    _hover={{ bg: "purple.100", color: "white" }}
-                    onClick={() => setModalRegister(true)}
-                  >
-                    CADASTRE-SE
-                  </MenuItem>
-                  <MenuItem
-                    _active={{ bg: "purple.100", color: "white" }}
-                    _focus={{ bg: "transparent" }}
-                    _hover={{ bg: "purple.100", color: "white" }}
-                    onClick={() => setModalLogin(true)}
-                  >
-                    FAÇA LOGIN
-                  </MenuItem>
-                  <Link href="/meusdados" passHref>
-                    <a>
+                  {JSON.stringify(client) === "{}" ? (
+                    <>
                       <MenuItem
                         _active={{ bg: "purple.100", color: "white" }}
                         _focus={{ bg: "transparent" }}
                         _hover={{ bg: "purple.100", color: "white" }}
+                        onClick={() => setModalRegister(true)}
                       >
-                        MEUS DADOS
+                        CADASTRE-SE
                       </MenuItem>
-                    </a>
-                  </Link>
+                      <MenuItem
+                        _active={{ bg: "purple.100", color: "white" }}
+                        _focus={{ bg: "transparent" }}
+                        _hover={{ bg: "purple.100", color: "white" }}
+                        onClick={() => setModalLogin(true)}
+                      >
+                        FAÇA LOGIN
+                      </MenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <Link href={`/meusdados/${client.identify}`} passHref>
+                        <a>
+                          <MenuItem
+                            _active={{ bg: "purple.100", color: "white" }}
+                            _focus={{ bg: "transparent" }}
+                            _hover={{ bg: "purple.100", color: "white" }}
+                          >
+                            MEUS DADOS
+                          </MenuItem>
+                        </a>
+                      </Link>
+                      <MenuDivider />
+                      <MenuItem
+                        _active={{ bg: "purple.100", color: "white" }}
+                        _focus={{ bg: "transparent" }}
+                        _hover={{ bg: "purple.100", color: "white" }}
+                        icon={<AiOutlineLogout />}
+                        onClick={() => logout()}
+                      >
+                        SAIR
+                      </MenuItem>
+                    </>
+                  )}
                 </MenuList>
               </Menu>
               <Flex>
@@ -329,7 +580,12 @@ export default function HeaderApp() {
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <FormControl>
+            <FormControl
+              isInvalid={
+                validators.find((obj) => obj.path === "cpflogin") ? true : false
+              }
+              isRequired
+            >
               <FormLabel>CPF</FormLabel>
               <MaskedInput
                 mask={[
@@ -348,16 +604,29 @@ export default function HeaderApp() {
                   /\d/,
                   /\d/,
                 ]}
+                id="cpflogin"
+                value={cpf}
+                onChange={(e) => setCpf(e.target.value)}
                 placeholder="CPF"
                 render={(ref, props) => (
                   <Input ref={ref} {...props} focusBorderColor="purple.400" />
                 )}
               />
+              <FormErrorMessage>
+                {validators.find((obj) => obj.path === "cpflogin")
+                  ? validators.find((obj) => obj.path === "cpflogin").message
+                  : ""}
+              </FormErrorMessage>
             </FormControl>
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme="purple" leftIcon={<AiOutlineLogin />}>
+            <Button
+              colorScheme="purple"
+              leftIcon={<AiOutlineLogin />}
+              isLoading={loading}
+              onClick={() => login()}
+            >
               Login
             </Button>
           </ModalFooter>
@@ -380,9 +649,25 @@ export default function HeaderApp() {
           <ModalCloseButton />
           <ModalBody>
             <Grid templateColumns="1fr" gap="15px">
-              <FormControl>
+              <FormControl
+                isRequired
+                isInvalid={
+                  validators.find((obj) => obj.path === "name") ? true : false
+                }
+              >
                 <FormLabel>Nome Completo</FormLabel>
-                <Input focusBorderColor="purple.400" />
+                <Input
+                  id="name"
+                  focusBorderColor="purple.400"
+                  placeholder="Nome Completo"
+                  value={name}
+                  onChange={(e) => setName(e.target.value.toUpperCase())}
+                />
+                <FormErrorMessage>
+                  {validators.find((obj) => obj.path === "name")
+                    ? validators.find((obj) => obj.path === "name").message
+                    : ""}
+                </FormErrorMessage>
               </FormControl>
             </Grid>
             <Grid
@@ -396,7 +681,12 @@ export default function HeaderApp() {
               ]}
               gap="15px"
             >
-              <FormControl>
+              <FormControl
+                isRequired
+                isInvalid={
+                  validators.find((obj) => obj.path === "cpf") ? true : false
+                }
+              >
                 <FormLabel>CPF</FormLabel>
                 <MaskedInput
                   mask={[
@@ -415,13 +705,26 @@ export default function HeaderApp() {
                     /\d/,
                     /\d/,
                   ]}
+                  id="cpf"
+                  value={cpf}
+                  onChange={(e) => setCpf(e.target.value)}
                   placeholder="CPF"
                   render={(ref, props) => (
                     <Input ref={ref} {...props} focusBorderColor="purple.400" />
                   )}
                 />
+                <FormErrorMessage>
+                  {validators.find((obj) => obj.path === "cpf")
+                    ? validators.find((obj) => obj.path === "cpf").message
+                    : ""}
+                </FormErrorMessage>
               </FormControl>
-              <FormControl>
+              <FormControl
+                isRequired
+                isInvalid={
+                  validators.find((obj) => obj.path === "phone") ? true : false
+                }
+              >
                 <FormLabel>Telefone</FormLabel>
                 <MaskedInput
                   mask={[
@@ -442,7 +745,9 @@ export default function HeaderApp() {
                     /\d/,
                   ]}
                   placeholder="Telefone"
-                  id="contact"
+                  id="phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   render={(ref, props) => (
                     <InputGroup>
                       <InputLeftElement children={<FaWhatsapp />} />
@@ -455,12 +760,34 @@ export default function HeaderApp() {
                     </InputGroup>
                   )}
                 />
+                <FormErrorMessage>
+                  {validators.find((obj) => obj.path === "phone")
+                    ? validators.find((obj) => obj.path === "phone").message
+                    : ""}
+                </FormErrorMessage>
               </FormControl>
             </Grid>
             <Grid templateColumns="1fr" mt={3}>
-              <FormControl mb={3}>
+              <FormControl
+                mb={3}
+                isRequired
+                isInvalid={
+                  validators.find((obj) => obj.path === "email") ? true : false
+                }
+              >
                 <FormLabel>Email</FormLabel>
-                <Input focusBorderColor="purple.400" placeholder="Email" />
+                <Input
+                  focusBorderColor="purple.400"
+                  placeholder="Email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                />
+                <FormErrorMessage>
+                  {validators.find((obj) => obj.path === "email")
+                    ? validators.find((obj) => obj.path === "email").message
+                    : ""}
+                </FormErrorMessage>
               </FormControl>
             </Grid>
             <Divider mt={7} mb={4} />
@@ -474,15 +801,47 @@ export default function HeaderApp() {
               ]}
               gap="15px"
             >
-              <FormControl>
+              <FormControl
+                isRequired
+                isInvalid={
+                  validators.find((obj) => obj.path === "street") ? true : false
+                }
+              >
                 <FormLabel>
                   Logradouro - Rua, Avenida, Alameda, etc...
                 </FormLabel>
-                <Input focusBorderColor="purple.400" />
+                <Input
+                  focusBorderColor="purple.400"
+                  placeholder="Logradouro - Rua, Avenida, Alameda, etc..."
+                  value={street}
+                  onChange={(e) => setStreet(e.target.value.toUpperCase())}
+                  id="street"
+                />
+                <FormErrorMessage>
+                  {validators.find((obj) => obj.path === "street")
+                    ? validators.find((obj) => obj.path === "street").message
+                    : ""}
+                </FormErrorMessage>
               </FormControl>
-              <FormControl>
+              <FormControl
+                isRequired
+                isInvalid={
+                  validators.find((obj) => obj.path === "number") ? true : false
+                }
+              >
                 <FormLabel>Número</FormLabel>
-                <Input focusBorderColor="purple.400" />
+                <Input
+                  focusBorderColor="purple.400"
+                  placeholder="Número"
+                  value={number}
+                  onChange={(e) => setNumber(e.target.value.toUpperCase())}
+                  id="number"
+                />
+                <FormErrorMessage>
+                  {validators.find((obj) => obj.path === "number")
+                    ? validators.find((obj) => obj.path === "number").message
+                    : ""}
+                </FormErrorMessage>
               </FormControl>
             </Grid>
             <Grid
@@ -498,11 +857,34 @@ export default function HeaderApp() {
             >
               <FormControl>
                 <FormLabel>Ponto de Referência</FormLabel>
-                <Input focusBorderColor="purple.400" />
+                <Input
+                  focusBorderColor="purple.400"
+                  placeholder="Ponto de Referência"
+                  value={comp}
+                  onChange={(e) => setComp(e.target.value.toUpperCase())}
+                />
               </FormControl>
-              <FormControl>
+              <FormControl
+                isInvalid={
+                  validators.find((obj) => obj.path === "district")
+                    ? true
+                    : false
+                }
+                isRequired
+              >
                 <FormLabel>Bairro / Distrito</FormLabel>
-                <Input focusBorderColor="purple.400" />
+                <Input
+                  focusBorderColor="purple.400"
+                  placeholder="Bairro / Distrito"
+                  value={district}
+                  onChange={(e) => setDistrict(e.target.value.toUpperCase())}
+                  id="district"
+                />
+                <FormErrorMessage>
+                  {validators.find((obj) => obj.path === "district")
+                    ? validators.find((obj) => obj.path === "district").message
+                    : ""}
+                </FormErrorMessage>
               </FormControl>
             </Grid>
             <Grid
@@ -516,7 +898,12 @@ export default function HeaderApp() {
               mt={3}
               gap="15px"
             >
-              <FormControl>
+              <FormControl
+                isRequired
+                isInvalid={
+                  validators.find((obj) => obj.path === "cep") ? true : false
+                }
+              >
                 <FormLabel>CEP</FormLabel>
                 <MaskedInput
                   mask={[
@@ -531,6 +918,9 @@ export default function HeaderApp() {
                     /\d/,
                     /\d/,
                   ]}
+                  id="cep"
+                  value={cep}
+                  onChange={(e) => setCep(e.target.value)}
                   placeholder="CEP"
                   render={(ref, props) => (
                     <Input
@@ -540,18 +930,46 @@ export default function HeaderApp() {
                     />
                   )}
                 />
+                <FormErrorMessage>
+                  {validators.find((obj) => obj.path === "cep")
+                    ? validators.find((obj) => obj.path === "cep").message
+                    : ""}
+                </FormErrorMessage>
               </FormControl>
-              <FormControl>
+              <FormControl
+                isInvalid={
+                  validators.find((obj) => obj.path === "city") ? true : false
+                }
+                isRequired
+              >
                 <FormLabel>Cidade</FormLabel>
-                <Input focusBorderColor="purple.400" />
+                <Input
+                  focusBorderColor="purple.400"
+                  placeholder="Cidade"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value.toUpperCase())}
+                  id="city"
+                />
+                <FormErrorMessage>
+                  {validators.find((obj) => obj.path === "city")
+                    ? validators.find((obj) => obj.path === "city").message
+                    : ""}
+                </FormErrorMessage>
               </FormControl>
-              <FormControl>
+              <FormControl
+                isInvalid={
+                  validators.find((obj) => obj.path === "state") ? true : false
+                }
+                isRequired
+              >
                 <FormLabel>UF</FormLabel>
                 <Select
                   placeholder="Selecione"
                   variant="outline"
                   focusBorderColor={"purple.400"}
                   id="state"
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
                 >
                   <option value="AC">AC</option>
                   <option value="AL">AL</option>
@@ -581,12 +999,22 @@ export default function HeaderApp() {
                   <option value="SE">SE</option>
                   <option value="TO">TO</option>
                 </Select>
+                <FormErrorMessage>
+                  {validators.find((obj) => obj.path === "state")
+                    ? validators.find((obj) => obj.path === "state").message
+                    : ""}
+                </FormErrorMessage>
               </FormControl>
             </Grid>
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme="purple" leftIcon={<FaSave />}>
+            <Button
+              colorScheme="purple"
+              leftIcon={<FaSave />}
+              isLoading={loading}
+              onClick={() => register()}
+            >
               Cadastrar
             </Button>
           </ModalFooter>

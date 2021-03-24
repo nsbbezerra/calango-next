@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -12,6 +12,7 @@ import {
   Text,
   Divider,
   Icon,
+  Center,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import HeaderApp from "../components/header";
@@ -25,11 +26,19 @@ import Carousel from "react-elastic-carousel";
 import Image from "next/image";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { FaUserAlt } from "react-icons/fa";
-import configs from "../configs/index";
+import configsGlobal from "../configs/index";
 import FooterApp from "../components/footer";
+import { useConfigs } from "../context/Configs";
+import { format, getHours, getMinutes } from "date-fns";
+import pt_br from "date-fns/locale/pt-BR";
 
-export default function Home() {
+export default function Home({ config, raffles, url }) {
   const [total, setTotal] = useState(27);
+  const { setConfigs } = useConfigs();
+
+  useEffect(() => {
+    setConfigs(config);
+  }, [config]);
 
   const CustomArrow = ({ type, onClick, isEdge }) => {
     const pointer =
@@ -158,101 +167,121 @@ export default function Home() {
 
       <Box pt={10} pb={10} bg="purple.400" mt={10}>
         <Container maxW="7xl">
-          <Carousel
-            renderArrow={CustomArrow}
-            breakPoints={configs.carousel.carousel}
-            renderPagination={({ pages, activePage, onClick }) => {
-              return (
-                <Flex mt={3}>
-                  {pages.map((page) => {
-                    const isActivePage = activePage === page;
-                    return (
-                      <Box
-                        w="12px"
-                        h="12px"
-                        shadow="sm"
-                        bg={isActivePage ? "green.400" : "green.100"}
-                        key={page}
-                        onClick={() => onClick(page)}
-                        borderRadius="50%"
-                        mr={2}
-                        cursor="pointer"
-                      />
-                    );
-                  })}
-                </Flex>
-              );
-            }}
-          >
-            <LinkBox
-              rounded="lg"
-              overflow="hidden"
-              w="220px"
-              bg="white"
-              shadow="dark-lg"
-            >
-              <Box w="220px" h="220px">
-                <Image
-                  src="https://image.freepik.com/vetores-gratis/composicao-de-loteria-isometrica-com-dinheiro-vencedor-moedas-carro-jackpot-inscricao-rifa-instantanea-tambor-tv-bolas-loto-isoladas_1284-39090.jpg"
-                  width={260}
-                  height={260}
-                  layout="responsive"
-                  objectFit="cover"
-                  alt="PMW Rifas, rifas online"
-                />
-              </Box>
-              <Slider
-                aria-label="slider-ex-4"
-                onChange={(e) => setTotal(e)}
-                defaultValue={total}
-                mt={-8}
+          {!raffles ? (
+            <Center>
+              <Heading
+                fontSize={["xl", "xl", "3xl", "3xl", "3xl"]}
+                color="white"
               >
-                <SliderTrack bg="purple.100">
-                  <SliderFilledTrack bg="purple.400" />
-                </SliderTrack>
-                <SliderThumb
-                  boxSize={8}
-                  borderWidth="1px"
-                  borderColor="purple.100"
-                  _focus={{ outline: "none" }}
+                Nenhum sorteio cadastrado
+              </Heading>
+            </Center>
+          ) : (
+            <Carousel
+              renderArrow={CustomArrow}
+              breakPoints={configsGlobal.carousel.carousel}
+              renderPagination={({ pages, activePage, onClick }) => {
+                return (
+                  <Flex mt={3}>
+                    {pages.map((page) => {
+                      const isActivePage = activePage === page;
+                      return (
+                        <Box
+                          w="12px"
+                          h="12px"
+                          shadow="sm"
+                          bg={isActivePage ? "green.400" : "green.100"}
+                          key={page}
+                          onClick={() => onClick(page)}
+                          borderRadius="50%"
+                          mr={2}
+                          cursor="pointer"
+                        />
+                      );
+                    })}
+                  </Flex>
+                );
+              }}
+            >
+              {raffles.map((raf) => (
+                <LinkBox
+                  rounded="lg"
+                  overflow="hidden"
+                  w="220px"
+                  bg="white"
+                  shadow="dark-lg"
+                  key={raf.id}
                 >
-                  <Text fontSize="x-small">{total}%</Text>
-                </SliderThumb>
-              </Slider>
-              <Box p={2} mt={-3} w="260px">
-                <Link href="/sorteio" passHref>
-                  <LinkOverlay>
-                    <Heading
-                      color="purple.400"
-                      fontSize="md"
-                      isTruncated
-                      noOfLines={1}
-                      w="200px"
+                  <Box w="220px" h="220px">
+                    <Image
+                      src={`${url}/${raf.thumbnail}`}
+                      width={260}
+                      height={260}
+                      layout="responsive"
+                      objectFit="cover"
+                      alt="PMW Rifas, rifas online"
+                    />
+                  </Box>
+                  <Slider
+                    aria-label="slider-ex-4"
+                    onChange={(e) => setTotal(e)}
+                    defaultValue={total}
+                    mt={-8}
+                  >
+                    <SliderTrack bg="purple.100">
+                      <SliderFilledTrack bg="purple.400" />
+                    </SliderTrack>
+                    <SliderThumb
+                      boxSize={8}
+                      borderWidth="1px"
+                      borderColor="purple.100"
+                      _focus={{ outline: "none" }}
                     >
-                      Título da Rifa Título da Rifa Título da Rifa
-                    </Heading>
-                  </LinkOverlay>
-                </Link>
-                <Text fontSize="xs" mt={2}>
-                  Sorteio dia <strong>10/10/1010</strong> as{" "}
-                  <strong>19:00</strong>
-                </Text>
-                <Flex align="center" mt={1}>
-                  <Text fontWeight="300" mr={2}>
-                    R$
-                  </Text>
-                  <Text fontWeight="800">1000</Text>
-                </Flex>
-                <Divider mt={1} mb={1} />
-                <Flex align="center" fontSize="xs">
-                  <Icon as={FaUserAlt} mr={2} />
-                  <Text w="180px" isTruncated noOfLines={1}>
-                    Nome do usuário
-                  </Text>
-                </Flex>
-              </Box>
-            </LinkBox>
-          </Carousel>
+                      <Text fontSize="x-small">{total}%</Text>
+                    </SliderThumb>
+                  </Slider>
+                  <Box p={2} mt={-3} w="260px">
+                    <Link href={`/sorteio/${raf.identify}`} passHref>
+                      <LinkOverlay>
+                        <Heading
+                          color="purple.400"
+                          fontSize="md"
+                          isTruncated
+                          noOfLines={1}
+                          w="200px"
+                        >
+                          {raf.name}
+                        </Heading>
+                      </LinkOverlay>
+                    </Link>
+                    <Text fontSize="xs" mt={2} isTruncated noOfLines={1}>
+                      Sorteio:{" "}
+                      <strong>
+                        {format(
+                          new Date(raf.draw_date),
+                          "dd 'de' MMMM', às ' HH:mm'h'",
+                          { locale: pt_br }
+                        )}
+                      </strong>{" "}
+                    </Text>
+                    <Flex align="center" mt={1}>
+                      <Text fontWeight="300" mr={2}>
+                        R$
+                      </Text>
+                      <Text fontWeight="800">{raf.raffle_value}</Text>
+                    </Flex>
+                    <Divider mt={1} mb={1} />
+                    <Flex align="center" fontSize="xs">
+                      <Icon as={FaUserAlt} mr={2} />
+                      <Text w="180px" isTruncated noOfLines={1}>
+                        {raf.name_client}
+                      </Text>
+                    </Flex>
+                  </Box>
+                </LinkBox>
+              ))}
+            </Carousel>
+          )}
 
           <Grid
             templateColumns={[
@@ -361,3 +390,20 @@ export default function Home() {
     </>
   );
 }
+
+export const getStaticProps = async () => {
+  const response = await fetch(`${configsGlobal.url}/site`);
+  const data = await response.json();
+  let conf = !data.configs ? null : data.configs;
+  let raf = !data.raffles ? null : data.raffles;
+  let url = !data.url ? null : data.url;
+
+  return {
+    props: {
+      config: conf,
+      raffles: raf,
+      url: url,
+    },
+    revalidate: 30,
+  };
+};

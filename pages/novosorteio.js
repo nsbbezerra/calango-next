@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import HeaderApp from "../components/header";
 import FooterApp from "../components/footerTotal";
 import { File, InputFile, InputFileFixed } from "../styles/uploader";
@@ -38,6 +38,8 @@ import {
   Stat,
   StatLabel,
   StatNumber,
+  FormErrorMessage,
+  Image as ChakraImage,
 } from "@chakra-ui/react";
 import {
   Breadcrumb,
@@ -60,11 +62,15 @@ import pt_br from "date-fns/locale/pt-BR";
 import MaskedInput from "react-text-mask";
 import { AiOutlineWarning } from "react-icons/ai";
 import Image from "next/image";
+import { useClient } from "../context/Clients";
+import configsGlobal from "../configs/index";
+import api from "../configs/axios";
 
 registerLocale("pt_br", pt_br);
 
-export default function NovoSorteio() {
+export default function NovoSorteio({ config }) {
   const toast = useToast();
+  const { client } = useClient();
 
   const [startDate, setStartDate] = useState(new Date());
   const [modalConfirm, setModalConfirm] = useState(false);
@@ -81,6 +87,90 @@ export default function NovoSorteio() {
 
   const [pix, setPix] = useState([]);
   const [transfer, setTransfer] = useState([]);
+
+  const [raffle, setRaffle] = useState("");
+  const [qtdNumbers, setQtdNumbers] = useState("0");
+  const [raffleValue, setRaffleValue] = useState("0");
+
+  const [validators, setValidators] = useState([]);
+  const [thumbnail, setThumbnail] = useState(null);
+  const [banner, setBanner] = useState(null);
+  const [description, setDescription] = useState("");
+
+  const [disableBanner, setDisableBanner] = useState(true);
+
+  const [loadingSave, setLoadingSave] = useState(false);
+
+  const [idToBanner, setIdToBanner] = useState(null);
+  const [loadingBanner, setLoadingBanner] = useState(false);
+
+  function clear() {
+    setRaffle("");
+    setQtdNumbers("0");
+    setRaffleValue("0");
+    setPix([]);
+    setTransfer([]);
+    setThumbnail(null);
+    setBanner(null);
+    removeBanner();
+    removeThumbnail();
+    setDescription("");
+    setStartDate(new Date());
+  }
+
+  useEffect(() => {
+    if (thumbnail) {
+      let size = thumbnail.size / 1024;
+      let thumbname = thumbnail.name;
+      if (thumbname.includes(" ")) {
+        handleValidator("image", "Nome da imagem não pode conter espaços");
+      }
+      if (size > 500) {
+        handleValidator(
+          "image",
+          "Imagem maior que 500kb, insira uma imagem menor"
+        );
+      }
+    } else {
+      setValidators([]);
+    }
+  }, [thumbnail]);
+  useEffect(() => {
+    if (banner) {
+      let size = banner.size / 1024;
+      let thumbname = banner.name;
+      if (thumbname.includes(" ")) {
+        handleValidator("banner", "Nome da imagem não pode conter espaços");
+      }
+      if (size > 500) {
+        handleValidator(
+          "banner",
+          "Imagem maior que 500kb, insira uma imagem menor"
+        );
+      }
+    } else {
+      setValidators([]);
+    }
+  }, [banner]);
+
+  const previewThumbnail = useMemo(() => {
+    return thumbnail ? URL.createObjectURL(thumbnail) : null;
+  }, [thumbnail]);
+
+  const previewBanner = useMemo(() => {
+    return banner ? URL.createObjectURL(banner) : null;
+  }, [banner]);
+
+  function handleValidator(path, message) {
+    let val = [];
+    let info = { path: path, message: message };
+    val.push(info);
+    setValidators(val);
+    if (path !== "image" || path !== "banner") {
+      const inpt = document.getElementById(path);
+      inpt.focus();
+    }
+  }
 
   const CustomInputPicker = ({ value, onClick }) => (
     <InputGroup>
@@ -100,6 +190,18 @@ export default function NovoSorteio() {
       status: status,
       position: "top-right",
     });
+  }
+
+  async function removeThumbnail() {
+    await URL.revokeObjectURL(thumbnail);
+    setThumbnail(null);
+    setValidators([]);
+  }
+
+  async function removeBanner() {
+    await URL.revokeObjectURL(banner);
+    setBanner(null);
+    setValidators([]);
   }
 
   async function handlePix() {
@@ -149,6 +251,116 @@ export default function NovoSorteio() {
     setTransfer(result);
   }
 
+  async function saveRaffle() {
+    if (!thumbnail) {
+      handleValidator("image", "Insira uma imagem");
+      setModalConfirm(false);
+      return false;
+    }
+    let size = thumbnail.size / 1024;
+    if (size > 500) {
+      handleValidator(
+        "image",
+        "Imagem maior que 500kb, insira uma imagem menor"
+      );
+      setModalConfirm(false);
+      return false;
+    }
+    if (raffle === "") {
+      handleValidator("raffle", "Campo Obrigatório");
+      setModalConfirm(false);
+      return false;
+    }
+    if (parseFloat(qtdNumbers) > parseFloat(config.max_numbers)) {
+      showToast(
+        `O número de rifas ultrapassa o número máximo permitido, a quatidade máxima permitida é de ${config.max_numbers} números.`,
+        "warning",
+        "Atenção"
+      );
+      setModalConfirm(false);
+      return false;
+    }
+    if (description === "") {
+      handleValidator("description", "Campo Obrigatório");
+      setModalConfirm(false);
+      return false;
+    }
+    if (pix.length === 0 && transfer.length === 0) {
+      showToast(
+        "Insira pelo menos uma forma de pagamento",
+        "warning",
+        "Atenção"
+      );
+      setModalConfirm(false);
+      return false;
+    }
+    setLoadingSave(true);
+    try {
+      let data = new FormData();
+      data.append("thumbnail", thumbnail);
+      data.append("name", raffle);
+      data.append("qtd_numbers", parseFloat(qtdNumbers));
+      data.append("draw_date", startDate);
+      data.append("draw_time", startDate);
+      data.append("client_id", client.id);
+      data.append("pix_keys", JSON.stringify(pix));
+      data.append("bank_transfer", JSON.stringify(transfer));
+      data.append("description", description);
+      data.append("raffle_value", raffleValue);
+
+      const response = await api.post("/raffle", data);
+
+      showToast(response.data.message, "success", "Sucesso");
+      showToast("Banner liberado para cadastro", "info", "Informação");
+
+      setIdToBanner(response.data.id);
+      setDisableBanner(false);
+
+      setLoadingSave(false);
+      setModalConfirm(false);
+    } catch (error) {
+      setLoadingSave(false);
+      if (error.message === "Network Error") {
+        alert(
+          "Sem conexão com o servidor, verifique sua conexão com a internet."
+        );
+        return false;
+      }
+      let mess = !error.response.data
+        ? "Erro no cadastro do cliente"
+        : error.response.data.message;
+      showToast(mess, "error", "Erro");
+    }
+  }
+
+  async function saveBanner() {
+    if (banner === null) {
+      showToast("Insira uma imagem de banner", "warning", "Atenção");
+      return false;
+    }
+    setLoadingBanner(true);
+    try {
+      let data = new FormData();
+      data.append("banner", banner);
+      const response = await api.put(`/banner/${idToBanner}`, data);
+      clear();
+      showToast(response.data.message, "success", "Sucesso");
+      setLoadingBanner(false);
+    } catch (error) {
+      setLoadingBanner(false);
+      if (error.message === "Network Error") {
+        alert(
+          "Sem conexão com o servidor, verifique sua conexão com a internet."
+        );
+        return false;
+      }
+      let mess = !error.response.data
+        ? "Erro no cadastro do cliente"
+        : error.response.data.message;
+      showToast(mess, "error", "Erro");
+    }
+  }
+
   return (
     <>
       <HeaderApp />
@@ -181,13 +393,42 @@ export default function NovoSorteio() {
             gap="20px"
             justifyContent="center"
           >
-            <FormControl isRequired>
+            <FormControl
+              isRequired
+              isInvalid={
+                validators.find((obj) => obj.path === "image") ? true : false
+              }
+            >
               <FormLabel>Imagem do Sorteio</FormLabel>
-              <InputFile lar={220} alt={220}>
-                <File type="file" />
-                <FaImage style={{ fontSize: 50, marginBottom: 20 }} />
-                <p>Insira uma imagem 220px x 220px com no máximo 300kb</p>
-              </InputFile>
+              {thumbnail ? (
+                <Box w="220px" h="220px" rounded="lg" overflow="hidden">
+                  <ChakraImage w="220px" h="220px" src={previewThumbnail} />
+                  <IconButton
+                    icon={<FaTrash />}
+                    rounded="full"
+                    colorScheme="red"
+                    mt={-20}
+                    ml="90px"
+                    shadow="dark-lg"
+                    onClick={() => removeThumbnail()}
+                  />
+                </Box>
+              ) : (
+                <InputFile lar={220} alt={220}>
+                  <File
+                    type="file"
+                    onChange={(event) => setThumbnail(event.target.files[0])}
+                    id="image"
+                  />
+                  <FaImage style={{ fontSize: 50, marginBottom: 20 }} />
+                  <p>Insira uma imagem 220px x 220px com no máximo 300kb</p>
+                </InputFile>
+              )}
+              <FormErrorMessage>
+                {validators.find((obj) => obj.path === "image")
+                  ? validators.find((obj) => obj.path === "image").message
+                  : ""}
+              </FormErrorMessage>
             </FormControl>
             <Box>
               <Grid
@@ -200,22 +441,52 @@ export default function NovoSorteio() {
                 ]}
                 gap="20px"
               >
-                <FormControl isRequired>
+                <FormControl
+                  isRequired
+                  isInvalid={
+                    validators.find((obj) => obj.path === "raffle")
+                      ? true
+                      : false
+                  }
+                >
                   <FormLabel>Nome do Sorteio</FormLabel>
                   <Input
+                    id="raffle"
                     placeholder="Nome do Sorteio"
                     focusBorderColor="purple.400"
+                    value={raffle}
+                    onChange={(e) => setRaffle(e.target.value.toUpperCase())}
                   />
+                  <FormErrorMessage>
+                    {validators.find((obj) => obj.path === "raffle")
+                      ? validators.find((obj) => obj.path === "raffle").message
+                      : ""}
+                  </FormErrorMessage>
                 </FormControl>
-                <FormControl isRequired>
+                <FormControl
+                  isRequired
+                  isInvalid={
+                    validators.find((obj) => obj.path === "qtd") ? true : false
+                  }
+                >
                   <FormLabel>Qtd. de Números</FormLabel>
-                  <NumberInput focusBorderColor="purple.400">
+                  <NumberInput
+                    focusBorderColor="purple.400"
+                    id="qtd"
+                    value={qtdNumbers}
+                    onChange={(e) => setQtdNumbers(e)}
+                  >
                     <NumberInputField />
                     <NumberInputStepper>
                       <NumberIncrementStepper />
                       <NumberDecrementStepper />
                     </NumberInputStepper>
                   </NumberInput>
+                  <FormErrorMessage>
+                    {validators.find((obj) => obj.path === "qtd")
+                      ? validators.find((obj) => obj.path === "qtd").message
+                      : ""}
+                  </FormErrorMessage>
                 </FormControl>
               </Grid>
               <Grid
@@ -229,15 +500,33 @@ export default function NovoSorteio() {
                 gap="20px"
                 mt={4}
               >
-                <FormControl isRequired>
+                <FormControl
+                  isRequired
+                  isInvalid={
+                    validators.find((obj) => obj.path === "value")
+                      ? true
+                      : false
+                  }
+                >
                   <FormLabel>Valor do Sorteio (R$)</FormLabel>
-                  <NumberInput focusBorderColor="purple.400" step={0.01}>
+                  <NumberInput
+                    focusBorderColor="purple.400"
+                    step={0.01}
+                    id="value"
+                    value={raffleValue}
+                    onChange={(e) => setRaffleValue(e)}
+                  >
                     <NumberInputField />
                     <NumberInputStepper>
                       <NumberIncrementStepper />
                       <NumberDecrementStepper />
                     </NumberInputStepper>
                   </NumberInput>
+                  <FormErrorMessage>
+                    {validators.find((obj) => obj.path === "value")
+                      ? validators.find((obj) => obj.path === "value").message
+                      : ""}
+                  </FormErrorMessage>
                 </FormControl>
 
                 <FormControl isRequired>
@@ -288,6 +577,7 @@ export default function NovoSorteio() {
                     placeholder="Nome do Sorteio"
                     focusBorderColor="purple.400"
                     isReadOnly
+                    value={client.name}
                   />
                 </FormControl>
                 <FormControl>
@@ -296,6 +586,7 @@ export default function NovoSorteio() {
                     placeholder="Nome do Sorteio"
                     focusBorderColor="purple.400"
                     isReadOnly
+                    value={client.email}
                   />
                 </FormControl>
                 <FormControl>
@@ -320,6 +611,7 @@ export default function NovoSorteio() {
                     ]}
                     placeholder="Telefone"
                     id="contact"
+                    value={client.phone}
                     render={(ref, props) => (
                       <InputGroup>
                         <InputLeftElement children={<FaWhatsapp />} />
@@ -702,9 +994,29 @@ export default function NovoSorteio() {
             </Grid>
           </FormControl>
           <Grid templateColumns="1fr">
-            <FormControl isRequired mt={4}>
+            <FormControl
+              isRequired
+              mt={4}
+              isInvalid={
+                validators.find((obj) => obj.path === "description")
+                  ? true
+                  : false
+              }
+            >
               <FormLabel>Descrição do Sorteio</FormLabel>
-              <Textarea focusBorderColor="purple.400" rows={5} resize="none" />
+              <Textarea
+                focusBorderColor="purple.400"
+                rows={5}
+                resize="none"
+                value={description}
+                onChange={(e) => setDescription(e.target.value.toUpperCase())}
+                id="description"
+              />
+              <FormErrorMessage>
+                {validators.find((obj) => obj.path === "description")
+                  ? validators.find((obj) => obj.path === "description").message
+                  : ""}
+              </FormErrorMessage>
             </FormControl>
           </Grid>
 
@@ -724,10 +1036,12 @@ export default function NovoSorteio() {
             <Stat>
               <StatLabel>Total a Pagar</StatLabel>
               <StatNumber>
-                {parseFloat(30).toLocaleString("pt-br", {
-                  style: "currency",
-                  currency: "BRL",
-                })}
+                {!config
+                  ? 0
+                  : parseFloat(config.raffle_value).toLocaleString("pt-br", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
               </StatNumber>
             </Stat>
             <Flex justify="flex-end">
@@ -751,15 +1065,48 @@ export default function NovoSorteio() {
         </Box>
 
         <Box borderWidth="1px" rounded="lg" p={5} mt={10}>
-          <FormControl>
+          <FormControl
+            isInvalid={
+              validators.find((obj) => obj.path === "banner") ? true : false
+            }
+          >
             <FormLabel>
               Banner (Opcional) - Faça o cadastro acima para liberar o banner
             </FormLabel>
-            <InputFileFixed disabled={true}>
-              <File type="file" disabled={true} />
-              <FaImage style={{ fontSize: 50, marginBottom: 20 }} />
-              <p>Insira uma imagem 4267px x 784px com no máximo 500kb</p>
-            </InputFileFixed>
+            {banner ? (
+              <>
+                <Box w="100%" h="20vh" rounded="lg" overflow="hidden">
+                  <ChakraImage w="100%" h="20vh" src={previewBanner} />
+                </Box>
+                <Flex mt={2} justify="center">
+                  <IconButton
+                    rounded="full"
+                    colorScheme="red"
+                    shadow="dark-lg"
+                    onClick={() => removeBanner()}
+                    mt={-10}
+                    icon={<FaTrash />}
+                  />
+                </Flex>
+              </>
+            ) : (
+              <InputFileFixed disabled={disableBanner}>
+                <File
+                  id="banner"
+                  type="file"
+                  disabled={disableBanner}
+                  onChange={(event) => setBanner(event.target.files[0])}
+                />
+                <FaImage style={{ fontSize: 50, marginBottom: 20 }} />
+                <p>Insira uma imagem 4267px x 784px com no máximo 500kb</p>
+              </InputFileFixed>
+            )}
+
+            <FormErrorMessage>
+              {validators.find((obj) => obj.path === "banner")
+                ? validators.find((obj) => obj.path === "banner").message
+                : ""}
+            </FormErrorMessage>
           </FormControl>
           <Divider mt={5} mb={5} />
 
@@ -767,7 +1114,9 @@ export default function NovoSorteio() {
             colorScheme="purple"
             size="lg"
             leftIcon={<FaSave />}
-            isDisabled={true}
+            isDisabled={disableBanner}
+            isLoading={loadingBanner}
+            onClick={() => saveBanner()}
           >
             Salvar Banner
           </Button>
@@ -800,7 +1149,7 @@ export default function NovoSorteio() {
                   colorScheme="whatsapp"
                   leftIcon={<FaWhatsapp />}
                 >
-                  (63) 99999-9999
+                  {config.admin_phone}
                 </Button>
               }{" "}
               para confirmar o pagamento e liberar o seu sorteio. Está tudo
@@ -809,10 +1158,21 @@ export default function NovoSorteio() {
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme="green" leftIcon={<FaStop />} variant="outline">
+            <Button
+              colorScheme="green"
+              leftIcon={<FaStop />}
+              variant="outline"
+              onClick={() => setModalConfirm(false)}
+            >
               Não
             </Button>
-            <Button colorScheme="green" leftIcon={<FaCheck />} ml={3}>
+            <Button
+              colorScheme="green"
+              leftIcon={<FaCheck />}
+              ml={3}
+              isLoading={loadingSave}
+              onClick={() => saveRaffle()}
+            >
               Sim
             </Button>
           </ModalFooter>
@@ -821,3 +1181,15 @@ export default function NovoSorteio() {
     </>
   );
 }
+
+export const getStaticProps = async () => {
+  const response = await fetch(`${configsGlobal.url}/configs`);
+  const data = await response.json();
+  let conf = !data ? null : data;
+  return {
+    props: {
+      config: conf,
+    },
+    revalidate: 5,
+  };
+};
