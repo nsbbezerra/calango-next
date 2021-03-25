@@ -56,7 +56,7 @@ import api from "../../configs/axios";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import useFetch from "../../hooks/useFetch";
 
-export default function Sorteio({ raffles, nu, url, configs }) {
+export default function Sorteio({ raffles, url }) {
   const { query, isFallback, back } = useRouter();
   const toast = useToast();
   const { client } = useClient();
@@ -64,12 +64,11 @@ export default function Sorteio({ raffles, nu, url, configs }) {
   const { setOpenLogin } = useLoginModal();
   const { data, error } = useFetch(`/numbers/${query.sorteio}`);
 
-  console.log("ERRO", error);
-
   useEffect(() => {
-    console.log(data);
-    if (data) {
-      setNums(data);
+    if (data !== undefined) {
+      setNums(data.numbers);
+    } else {
+      setNums([]);
     }
   }, [data]);
 
@@ -84,53 +83,19 @@ export default function Sorteio({ raffles, nu, url, configs }) {
   const [nums, setNums] = useState([]); //Para compara os números, Livres, Reservados e Pagos
   const [percent, setPercent] = useState(0);
 
-  useEffect(() => {
-    console.log(mynumbers);
-  }, [mynumbers]);
-
-  const [free, setFree] = useState(0);
-  const [reserved, setReserved] = useState(0);
-  const [paid_out, setPaid_out] = useState(0);
-  const [ownNumbers, setOwnNumbers] = useState(0);
-
   const [concordo, setConcordo] = useState(0);
+
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (raffles) {
       findActRaffle(query.sorteio);
-      if (nums !== null) {
-        findPercent();
-      }
     }
   }, [raffles]);
 
   async function findActRaffle(id) {
     const result = await raffles.find((obj) => obj.identify === id);
     setRaffle(result);
-    setFree(parseInt(result.qtd_numbers));
-  }
-
-  async function findNumbersInfo() {}
-
-  async function findPercent() {
-    if (nums !== null) {
-      if (nums.length === 0) {
-        setPercent(0);
-      } else {
-        if (JSON.stringify(raffle) === "{}") {
-          setPercent(0);
-        } else {
-          const result = nums.filter((obj) => obj.raffle_id === raffle.id);
-          const findActive = result.filter((obj) => obj.status === "paid_out");
-          let numSales = findActive.length;
-
-          let soma = (parseInt(numSales) * 100) / parseInt(raffle.qtd_numbers);
-          setPercent(soma);
-        }
-      }
-    } else {
-      setPercent(0);
-    }
   }
 
   useEffect(() => {
@@ -179,11 +144,6 @@ export default function Sorteio({ raffles, nu, url, configs }) {
     }
   }
 
-  function handlePayment() {
-    setModalSent(false);
-    setModalPayment(true);
-  }
-
   function capitalizeAllFirstLetter(string) {
     let toLower = string.toLowerCase();
     let splited = toLower.split(" ");
@@ -199,10 +159,63 @@ export default function Sorteio({ raffles, nu, url, configs }) {
     setAmount(0);
   }
 
+  async function storeNumbers() {
+    setLoading(true);
+    try {
+      const response = await api.post("/numbers", {
+        raffle_id: raffle.id,
+        client_id: client.id,
+        numbers: mynumbers,
+      });
+      setModalPayment(true);
+      setAmount(0);
+      setMynumbers([]);
+      setModalSent(false);
+      setLoading(false);
+      showToast(response.data.message, "success", "Sucesso");
+    } catch (error) {
+      setLoading(false);
+      if (error.message === "Network Error") {
+        alert(
+          "Sem conexão com o servidor, verifique sua conexão com a internet."
+        );
+        return false;
+      }
+      let mess = !error.response.data
+        ? "Erro no cadastro do cliente"
+        : error.response.data.message;
+      showToast(mess, "error", "Erro");
+    }
+  }
+
+  function handleBG(id) {
+    if (id !== undefined) {
+      if (JSON.stringify(client) !== "{}") {
+        if (id.id_client === client.id) {
+          return "red.600";
+        } else {
+          if (id.status === "reserved") {
+            return "orange.400";
+          }
+          if (id.status === "paid_out") {
+            return "green.400";
+          }
+        }
+      } else {
+        if (id.status === "reserved") {
+          return "orange.400";
+        }
+        if (id.status === "paid_out") {
+          return "green.400";
+        }
+      }
+    }
+  }
+
   return (
     <>
       <HeaderApp />
-      <Container maxW="6xl" mt={10}>
+      <Container maxW="6xl" mt={20}>
         {JSON.stringify(raffle) === "{}" ? (
           <Center>
             <Heading fontSize="2xl">Nenhuma informação para mostrar</Heading>
@@ -259,19 +272,7 @@ export default function Sorteio({ raffles, nu, url, configs }) {
               </Box>
               <Box minW="100%">
                 <Heading fontSize="3xl">{raffle.name}</Heading>
-                <Slider aria-label="slider-ex-4" value={percent}>
-                  <SliderTrack bg="purple.100">
-                    <SliderFilledTrack bg="purple.400" />
-                  </SliderTrack>
-                  <SliderThumb
-                    boxSize={8}
-                    borderWidth="1px"
-                    borderColor="purple.100"
-                    _focus={{ outline: "none" }}
-                  >
-                    <Text fontSize="x-small">{percent}%</Text>
-                  </SliderThumb>
-                </Slider>
+                <Divider mt={5} mb={5} />
                 <Flex
                   direction={["column", "column", "column", "row", "row"]}
                   justifyContent="space-between"
@@ -310,7 +311,7 @@ export default function Sorteio({ raffles, nu, url, configs }) {
         )}
       </Container>
 
-      <Box pt={10} pb={10} bg="purple.400" mt={10}>
+      <Box pt={10} pb={10} bg="purple.400" mt={20}>
         <Container maxW="7xl">
           <Grid
             templateColumns={[
@@ -432,7 +433,13 @@ export default function Sorteio({ raffles, nu, url, configs }) {
               color="white"
               textAlign="center"
             >
-              Livres ({free})
+              Livres (
+              {nums.length > 0 && JSON.stringify(raffle) !== "{}"
+                ? raffle.qtd_numbers -
+                  nums.filter((obj) => obj.status === "reserved").length -
+                  nums.filter((obj) => obj.status === "paid_out").length
+                : raffle.qtd_numbers}
+              )
             </Box>
             <Box
               rounded="3xl"
@@ -444,7 +451,11 @@ export default function Sorteio({ raffles, nu, url, configs }) {
               color="white"
               textAlign="center"
             >
-              Reservado ({reserved})
+              Reservado (
+              {nums.length > 0
+                ? nums.filter((obj) => obj.status === "reserved").length
+                : 0}
+              )
             </Box>
             <Box
               rounded="3xl"
@@ -456,7 +467,11 @@ export default function Sorteio({ raffles, nu, url, configs }) {
               color="white"
               textAlign="center"
             >
-              Pago ({paid_out})
+              Pago (
+              {nums.length > 0
+                ? nums.filter((obj) => obj.status === "paid_out").length
+                : 0}
+              )
             </Box>
             <Box
               rounded="3xl"
@@ -468,7 +483,11 @@ export default function Sorteio({ raffles, nu, url, configs }) {
               color="white"
               textAlign="center"
             >
-              Meus Números ({ownNumbers})
+              Meus Números (
+              {JSON.stringify(client) !== "{}"
+                ? nums.filter((obj) => obj.id_client === client.id).length
+                : 0}
+              )
             </Box>
           </Grid>
           <Box
@@ -490,6 +509,11 @@ export default function Sorteio({ raffles, nu, url, configs }) {
                 <Button
                   w="75px"
                   colorScheme="blackAlpha"
+                  isDisabled={
+                    nums.find((obj) => obj.number === parseInt(num.num))
+                      ? true
+                      : false
+                  }
                   bg={
                     mynumbers.find((obj) => obj === num.num)
                       ? "purple.200"
@@ -513,6 +537,26 @@ export default function Sorteio({ raffles, nu, url, configs }) {
                   }}
                   key={num.num}
                   onClick={() => handleNumbers(num.num)}
+                  _disabled={{
+                    bg: handleBG(
+                      nums.find((obj) => obj.number === parseInt(num.num))
+                    ),
+                    _hover: {
+                      bg: handleBG(
+                        nums.find((obj) => obj.number === parseInt(num.num))
+                      ),
+                    },
+                    _active: {
+                      bg: handleBG(
+                        nums.find((obj) => obj.number === parseInt(num.num))
+                      ),
+                    },
+                    _focus: {
+                      bg: handleBG(
+                        nums.find((obj) => obj.number === parseInt(num.num))
+                      ),
+                    },
+                  }}
                 >
                   {num.num}
                 </Button>
@@ -736,8 +780,9 @@ export default function Sorteio({ raffles, nu, url, configs }) {
               colorScheme="green"
               leftIcon={<FaCheck />}
               ml={3}
-              onClick={() => handlePayment()}
+              onClick={() => storeNumbers()}
               isDisabled={!concordo}
+              isLoading={loading}
             >
               Concluir
             </Button>
@@ -825,18 +870,38 @@ export default function Sorteio({ raffles, nu, url, configs }) {
                 </Box>
                 <Divider />
                 <Box p={3} fontSize="sm">
-                  <Text>
-                    Agencia: <strong>0000-00</strong>
-                  </Text>
-                  <Text>
-                    Conta Corrente: <strong>0000-00</strong>
-                  </Text>
-                  <Text>
-                    Operação: <strong>0000-00</strong>
-                  </Text>
-                  <Text>
-                    Variação: <strong>0000-00</strong>
-                  </Text>
+                  {raffle.bank_transfer
+                    ? raffle.bank_transfer.map((bnk) => (
+                        <Box key={bnk.cc}>
+                          {bnk.bank !== "" && (
+                            <Text>
+                              Banco: <strong>{bnk.bank}</strong>
+                            </Text>
+                          )}
+                          {bnk.ag !== "" && (
+                            <Text>
+                              Agencia: <strong>{bnk.ag}</strong>
+                            </Text>
+                          )}
+                          {bnk.cc !== "" && (
+                            <Text>
+                              {bnk.type}: <strong>{bnk.cc}</strong>
+                            </Text>
+                          )}
+                          {bnk.op !== "" && (
+                            <Text>
+                              Operação: <strong>{bnk.op}</strong>
+                            </Text>
+                          )}
+                          {bnk.vr !== "" && (
+                            <Text>
+                              Variação: <strong>{bnk.vr}</strong>
+                            </Text>
+                          )}
+                          <Divider mt={2} mb={2} />
+                        </Box>
+                      ))
+                    : ""}
                 </Box>
               </Box>
             </Grid>
@@ -846,15 +911,19 @@ export default function Sorteio({ raffles, nu, url, configs }) {
               número:{" "}
             </Text>
             <Link
-              href={`https://wa.me/+55${configs.admin_phone.replace(
-                /([\u0300-\u036f]|[^0-9a-zA-Z])/g,
-                ""
-              )}`}
+              href={
+                raffle.phone_client
+                  ? `https://wa.me/+55${raffle.phone_client.replace(
+                      /([\u0300-\u036f]|[^0-9a-zA-Z])/g,
+                      ""
+                    )}`
+                  : ""
+              }
               passHref
             >
               <a target={"_blank"}>
                 <Button colorScheme="green" leftIcon={<FaWhatsapp />} mt={3}>
-                  {configs.admin_phone ? configs.admin_phone : ""}
+                  {raffle.phone_client ? raffle.phone_client : ""}
                 </Button>
               </a>
             </Link>
@@ -881,13 +950,11 @@ export const getStaticProps = async () => {
   const response = await fetch(`${configGloba.url}/raffles`);
   const data = await response.json();
   let raffles = !data.raffles ? null : data.raffles;
-  let configs = !data.configs ? null : data.configs;
   let url = !data.url ? null : data.url;
   return {
     props: {
       raffles,
       url,
-      configs,
     },
     revalidate: 30,
   };

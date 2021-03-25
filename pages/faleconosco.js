@@ -17,8 +17,9 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
 } from "../components/sliders";
+import configGlobal from "../configs/index";
 
-export default function FaleConosco() {
+export default function FaleConosco({ config }) {
   return (
     <>
       <HeaderApp />
@@ -60,8 +61,14 @@ export default function FaleConosco() {
         </Center>
         <Flex justify="center" align="center">
           <LinkBox>
-            <Link href="/" passHref>
-              <LinkOverlay>
+            <Link
+              href={`https://wa.me/+55${config.admin_phone.replace(
+                /([\u0300-\u036f]|[^0-9a-zA-Z])/g,
+                ""
+              )}`}
+              passHref
+            >
+              <LinkOverlay target="_blank">
                 <Box w="200px" h="200px">
                   <Image
                     width={200}
@@ -81,3 +88,13 @@ export default function FaleConosco() {
     </>
   );
 }
+
+export const getStaticProps = async () => {
+  const response = await fetch(`${configGlobal.url}/configs`);
+  const data = await response.json();
+  return {
+    props: {
+      config: data,
+    },
+  };
+};

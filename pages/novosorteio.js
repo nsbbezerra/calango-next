@@ -1144,13 +1144,23 @@ export default function NovoSorteio({ config }) {
               pagamento e seu número de Whatsapp, após finalizar entre em
               contato com o administrador do PMW Rifas através do Whatsapp:{" "}
               {
-                <Button
-                  size="xs"
-                  colorScheme="whatsapp"
-                  leftIcon={<FaWhatsapp />}
+                <Link
+                  href={`https://wa.me/+55${config.admin_phone.replace(
+                    /([\u0300-\u036f]|[^0-9a-zA-Z])/g,
+                    ""
+                  )}`}
+                  passHref
                 >
-                  {config.admin_phone}
-                </Button>
+                  <a target="_blank">
+                    <Button
+                      size="xs"
+                      colorScheme="whatsapp"
+                      leftIcon={<FaWhatsapp />}
+                    >
+                      {config.admin_phone}
+                    </Button>
+                  </a>
+                </Link>
               }{" "}
               para confirmar o pagamento e liberar o seu sorteio. Está tudo
               correto? Deseja proseguir?

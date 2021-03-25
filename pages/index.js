@@ -32,7 +32,7 @@ import { format } from "date-fns";
 import pt_br from "date-fns/locale/pt-BR";
 import { useNumbers } from "../context/Numbers";
 
-export default function Home({ config, raffles, url, numbers, banners }) {
+export default function Home({ config, raffles, url, banners }) {
   const { setConfigs } = useConfigs();
   const { setNumbers } = useNumbers();
 
@@ -41,10 +41,6 @@ export default function Home({ config, raffles, url, numbers, banners }) {
   useEffect(() => {
     setConfigs(config);
   }, [config]);
-
-  useEffect(() => {
-    setNumbers(numbers);
-  }, [numbers]);
 
   useEffect(() => {
     if (!banners) {
@@ -88,34 +84,11 @@ export default function Home({ config, raffles, url, numbers, banners }) {
     );
   };
 
-  function calcPercent(id) {
-    if (numbers !== null) {
-      if (numbers.length === 0) {
-        return 0;
-      } else {
-        const result = numbers.filter((obj) => obj.raffle_id === id);
-        const finraffle = raffles.filter((obj) => obj.id === id);
-        let numSales = result.length;
-
-        let soma = (parseInt(numSales) * 100) / parseInt(finraffle.qtd_numbers);
-        return soma;
-      }
-    } else {
-      return 0;
-    }
-  }
-
   return (
     <>
       <HeaderApp />
       <Container maxW="7xl" mt={20}>
-        <Carousel
-          itemsToShow={1}
-          enableAutoPlay
-          autoPlaySpeed={5000}
-          renderArrow={CustomArrowBanner}
-          pagination={false}
-        >
+        <>
           {banner.length === 0 ? (
             <Box rounded="lg" overflow="hidden">
               <ChakraImage
@@ -125,7 +98,13 @@ export default function Home({ config, raffles, url, numbers, banners }) {
               />
             </Box>
           ) : (
-            <>
+            <Carousel
+              itemsToShow={1}
+              enableAutoPlay
+              autoPlaySpeed={5000}
+              renderArrow={CustomArrowBanner}
+              pagination={false}
+            >
               {banner.map((ban) => (
                 <LinkBox rounded="lg" overflow="hidden" key={ban.id}>
                   <Link passHref href={`/sorteio/${ban.identify}`}>
@@ -139,9 +118,9 @@ export default function Home({ config, raffles, url, numbers, banners }) {
                   </Link>
                 </LinkBox>
               ))}
-            </>
+            </Carousel>
           )}
-        </Carousel>
+        </>
       </Container>
 
       <Box pt={10} pb={10} bg="purple.400" mt={20}>
@@ -194,26 +173,7 @@ export default function Home({ config, raffles, url, numbers, banners }) {
                       alt="PMW Rifas, rifas online"
                     />
                   </Box>
-                  <Slider
-                    aria-label="slider-ex-4"
-                    value={calcPercent(raf.id)}
-                    mt={-8}
-                  >
-                    <SliderTrack bg="purple.100">
-                      <SliderFilledTrack bg="purple.400" />
-                    </SliderTrack>
-                    <SliderThumb
-                      boxSize={8}
-                      borderWidth="1px"
-                      borderColor="purple.100"
-                      _focus={{ outline: "none" }}
-                    >
-                      <Text fontSize="x-small">
-                        {calcPercent(raf.id).toString()}%
-                      </Text>
-                    </SliderThumb>
-                  </Slider>
-                  <Box p={2} mt={-3} w="260px">
+                  <Box p={2} w="260px">
                     <Link href={`/sorteio/${raf.identify}`} passHref>
                       <LinkOverlay>
                         <Heading
@@ -374,14 +334,12 @@ export const getStaticProps = async () => {
   let conf = !data.configs ? null : data.configs;
   let raf = !data.raffles ? null : data.raffles;
   let url = !data.url ? null : data.url;
-  let numbers = !data.numbers ? null : data.numbers;
   let banners = !data.banners ? null : data.banners;
   return {
     props: {
       config: conf,
       raffles: raf,
       url: url,
-      numbers,
       banners,
     },
     revalidate: 30,
