@@ -33,6 +33,7 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  Center,
 } from "@chakra-ui/react";
 import {
   Slider,
@@ -49,9 +50,16 @@ import { AiFillBank, AiOutlineLogin } from "react-icons/ai";
 import { MdKeyboardArrowUp } from "react-icons/md";
 import MaskedInput from "react-text-mask";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import configGloba from "../../configs/index";
+import { format } from "date-fns";
+import pt_br from "date-fns/locale/pt-BR";
+import { useClient } from "../../context/Clients";
 
-export default function Sorteio() {
+export default function Sorteio({ raffles, numeros, url }) {
+  const { query, isFallback, back } = useRouter();
   const toast = useToast();
+  const { client } = useClient();
 
   const [numbers, setNumbers] = useState([]);
   const [mynumbers, setMynumbers] = useState([]);
@@ -62,22 +70,84 @@ export default function Sorteio() {
   const [modalLogin, setModalLogin] = useState(false);
   const [modalPayment, setModalPayment] = useState(false);
 
+  const [raffle, setRaffle] = useState({});
+  const [nums, setNums] = useState([]); //Para compara os números, Livres, Reservados e Pagos
+  const [percent, setPercent] = useState(0);
+
+  const [free, setFree] = useState(0);
+  const [reserved, setReserved] = useState(0);
+  const [paid_out, setPaid_out] = useState(0);
+  const [ownNumbers, setOwnNumbers] = useState(0);
+
+  const [concordo, setConcordo] = useState(0);
+
   useEffect(() => {
-    generateNumbers();
-  }, []);
+    if (raffles) {
+      findActRaffle(query.sorteio);
+      if (numeros !== null) {
+        findPercent();
+      }
+    }
+  }, [raffles]);
+
+  async function findActRaffle(id) {
+    const result = await raffles.find((obj) => obj.identify === id);
+    setRaffle(result);
+    setFree(parseInt(result.qtd_numbers));
+  }
+
+  useEffect(() => {
+    if (!numeros) {
+      setNums([]);
+    } else {
+      setNums(numeros);
+      findNumbersInfo();
+    }
+  }, [numeros]);
+
+  async function findNumbersInfo() {}
+
+  async function findPercent() {
+    if (numeros !== null) {
+      if (numeros.length === 0) {
+        setPercent(0);
+      } else {
+        if (JSON.stringify(raffle) === "{}") {
+          setPercent(0);
+        } else {
+          const result = numeros.filter((obj) => obj.raffle_id === raffle.id);
+          const findActive = result.filter((obj) => obj.status === "paid_out");
+          let numSales = findActive.length;
+
+          let soma = (parseInt(numSales) * 100) / parseInt(raffle.qtd_numbers);
+          setPercent(soma);
+        }
+      }
+    } else {
+      setPercent(0);
+    }
+  }
+
+  useEffect(() => {
+    if (JSON.stringify(raffle) !== "{}") {
+      generateNumbers();
+    }
+  }, [raffle]);
 
   function generateNumbers() {
-    let number = [];
-    for (let index = 0; index < 100; index++) {
-      let info = {
-        num:
-          (index < 10 - 1 && `00${index + 1}`) ||
-          (index < 100 - 1 && `0${index + 1}`) ||
-          (index >= 100 - 1 && `${index + 1}`),
-      };
-      number.push(info);
+    if (JSON.stringify(raffle) !== "{}") {
+      let number = [];
+      for (let index = 0; index < parseInt(raffle.qtd_numbers); index++) {
+        let info = {
+          num:
+            (index < 10 - 1 && `00${index + 1}`) ||
+            (index < 100 - 1 && `0${index + 1}`) ||
+            (index >= 100 - 1 && `${index + 1}`),
+        };
+        number.push(info);
+      }
+      setNumbers(number);
     }
-    setNumbers(number);
   }
 
   function showToast(message, status, title) {
@@ -90,7 +160,9 @@ export default function Sorteio() {
   }
 
   useEffect(() => {
-    setAmount(mynumbers.length * 100);
+    if (mynumbers.length > 0) {
+      setAmount(mynumbers.length * parseFloat(raffle.raffle_value));
+    }
   }, [mynumbers]);
 
   async function handleNumbers(num) {
@@ -117,106 +189,125 @@ export default function Sorteio() {
     setModalPayment(true);
   }
 
+  function capitalizeAllFirstLetter(string) {
+    let toLower = string.toLowerCase();
+    let splited = toLower.split(" ");
+    let toJoin = splited.map((e) => {
+      return e.charAt(0).toUpperCase() + e.slice(1);
+    });
+    let joined = toJoin.join(" ");
+    return joined;
+  }
+
   return (
     <>
       <HeaderApp />
       <Container maxW="6xl" mt={10}>
-        <Breadcrumb mb={10} fontSize={["xx-small", "md", "md", "md", "md"]}>
-          <BreadcrumbItem>
-            <Link href="/" passHref>
-              <a>
-                <BreadcrumbLink>Início</BreadcrumbLink>
-              </a>
-            </Link>
-          </BreadcrumbItem>
+        {JSON.stringify(raffle) === "{}" ? (
+          <Center>
+            <Heading fontSize="2xl">Nenhuma informação para mostrar</Heading>
+          </Center>
+        ) : (
+          <>
+            <Breadcrumb mb={10} fontSize={["xx-small", "md", "md", "md", "md"]}>
+              <BreadcrumbItem>
+                <Link href="/" passHref>
+                  <a>
+                    <BreadcrumbLink>Início</BreadcrumbLink>
+                  </a>
+                </Link>
+              </BreadcrumbItem>
 
-          <BreadcrumbItem>
-            <Link passHref href="/sorteios">
-              <a>
-                <BreadcrumbLink>Sorteios</BreadcrumbLink>
-              </a>
-            </Link>
-          </BreadcrumbItem>
-          <BreadcrumbItem>
-            <Link passHref href="/sorteios">
-              <a>
-                <BreadcrumbLink>Nome da Rifa</BreadcrumbLink>
-              </a>
-            </Link>
-          </BreadcrumbItem>
-        </Breadcrumb>
-        <Grid
-          templateColumns={[
-            "1fr",
-            "1fr",
-            "220px 1fr",
-            "220px 1fr",
-            "220px 1fr",
-          ]}
-          gap="40px"
-          justifyItems="center"
-          alignItems="center"
-        >
-          <Box w="220px" h="220px" overflow="hidden" rounded="lg">
-            <Image
-              src="https://image.freepik.com/vetores-gratis/composicao-de-loteria-isometrica-com-dinheiro-vencedor-moedas-carro-jackpot-inscricao-rifa-instantanea-tambor-tv-bolas-loto-isoladas_1284-39090.jpg"
-              width={260}
-              height={260}
-              layout="responsive"
-              objectFit="cover"
-              alt="PMW Rifas, rifas online"
-            />
-          </Box>
-          <Box>
-            <Heading fontSize="3xl">Título da rifa</Heading>
-            <Slider aria-label="slider-ex-4" defaultValue={30}>
-              <SliderTrack bg="purple.100">
-                <SliderFilledTrack bg="purple.400" />
-              </SliderTrack>
-              <SliderThumb
-                boxSize={8}
-                borderWidth="1px"
-                borderColor="purple.100"
-                _focus={{ outline: "none" }}
-              >
-                <Text fontSize="x-small">70%</Text>
-              </SliderThumb>
-            </Slider>
-            <Flex
-              direction={["column", "column", "column", "row", "row"]}
-              justifyContent="space-between"
+              <BreadcrumbItem>
+                <Link passHref href="/sorteios">
+                  <a>
+                    <BreadcrumbLink>Sorteios</BreadcrumbLink>
+                  </a>
+                </Link>
+              </BreadcrumbItem>
+              <BreadcrumbItem>
+                <Link passHref href={`/sorteio/${raffle.identify}`}>
+                  <a>
+                    <BreadcrumbLink>
+                      {capitalizeAllFirstLetter(raffle.name)}
+                    </BreadcrumbLink>
+                  </a>
+                </Link>
+              </BreadcrumbItem>
+            </Breadcrumb>
+            <Grid
+              templateColumns={[
+                "1fr",
+                "1fr",
+                "220px 1fr",
+                "220px 1fr",
+                "220px 1fr",
+              ]}
+              gap="40px"
+              justifyItems="center"
+              alignItems="center"
             >
-              <HStack
-                fontSize={["lg", "xl", "2xl", "2xl", "2xl"]}
-                spacing="15px"
-              >
-                <Text>R$</Text>
-                <Text fontWeight="700">100</Text>
-              </HStack>
-              <HStack
-                fontSize={["lg", "xl", "2xl", "2xl", "2xl"]}
-                spacing="15px"
-              >
-                <Text>Data do Sorteio</Text>
-                <Text fontWeight="700">10/10/1000</Text>
-              </HStack>
-              <HStack
-                fontSize={["lg", "xl", "2xl", "2xl", "2xl"]}
-                spacing="15px"
-              >
-                <Text>Hora do Sorteio</Text>
-                <Text fontWeight="700">19:00</Text>
-              </HStack>
-            </Flex>
-            <Box borderWidth="1px" mt={3} rounded="lg" p={4}>
-              The standard chunk of Lorem Ipsum used since the 1500s is
-              reproduced below for those interested. Sections 1.10.32 and
-              1.10.33 from "de Finibus Bonorum et Malorum" by Cicero are also
-              reproduced in their exact original form, accompanied by English
-              versions from the 1914 translation by H. Rackham.
-            </Box>
-          </Box>
-        </Grid>
+              <Box w="220px" h="220px" overflow="hidden" rounded="lg">
+                <Image
+                  src={`${url}/${raffle.thumbnail}`}
+                  width={260}
+                  height={260}
+                  layout="responsive"
+                  objectFit="cover"
+                  alt="PMW Rifas, rifas online"
+                />
+              </Box>
+              <Box minW="100%">
+                <Heading fontSize="3xl">{raffle.name}</Heading>
+                <Slider aria-label="slider-ex-4" value={percent}>
+                  <SliderTrack bg="purple.100">
+                    <SliderFilledTrack bg="purple.400" />
+                  </SliderTrack>
+                  <SliderThumb
+                    boxSize={8}
+                    borderWidth="1px"
+                    borderColor="purple.100"
+                    _focus={{ outline: "none" }}
+                  >
+                    <Text fontSize="x-small">{percent}%</Text>
+                  </SliderThumb>
+                </Slider>
+                <Flex
+                  direction={["column", "column", "column", "row", "row"]}
+                  justifyContent="space-between"
+                >
+                  <HStack
+                    fontSize={["lg", "xl", "2xl", "2xl", "2xl"]}
+                    spacing="15px"
+                  >
+                    <Text>R$</Text>
+                    <Text fontWeight="700">
+                      {parseFloat(raffle.raffle_value).toLocaleString("pt-br", {
+                        minimumFractionDigits: 2,
+                      })}
+                    </Text>
+                  </HStack>
+                  <HStack
+                    fontSize={["lg", "xl", "2xl", "2xl", "2xl"]}
+                    spacing="15px"
+                  >
+                    <Text>Data do Sorteio</Text>
+                    <Text fontWeight="700">
+                      {format(
+                        new Date(raffle.draw_date),
+                        "dd 'de' MMMM', às ' HH:mm'h'",
+                        { locale: pt_br }
+                      )}
+                    </Text>
+                  </HStack>
+                </Flex>
+                <Box borderWidth="1px" mt={3} rounded="lg" p={4}>
+                  {raffle.description}
+                </Box>
+              </Box>
+            </Grid>
+          </>
+        )}
       </Container>
 
       <Box pt={10} pb={10} bg="purple.400" mt={10}>
@@ -341,7 +432,7 @@ export default function Sorteio() {
               color="white"
               textAlign="center"
             >
-              Livres (998)
+              Livres ({free})
             </Box>
             <Box
               rounded="3xl"
@@ -353,7 +444,7 @@ export default function Sorteio() {
               color="white"
               textAlign="center"
             >
-              Reservado (998)
+              Reservado ({reserved})
             </Box>
             <Box
               rounded="3xl"
@@ -365,7 +456,7 @@ export default function Sorteio() {
               color="white"
               textAlign="center"
             >
-              Pago (998)
+              Pago ({paid_out})
             </Box>
             <Box
               rounded="3xl"
@@ -377,7 +468,7 @@ export default function Sorteio() {
               color="white"
               textAlign="center"
             >
-              Meus Números ({mynumbers.length})
+              Meus Números ({ownNumbers})
             </Box>
           </Grid>
           <Box
@@ -401,23 +492,23 @@ export default function Sorteio() {
                   colorScheme="blackAlpha"
                   bg={
                     mynumbers.find((obj) => obj === num.num)
-                      ? "red.600"
+                      ? "purple.200"
                       : "black"
                   }
                   _focus={{
                     outline: "none",
                     bg: mynumbers.find((obj) => obj === num.num)
-                      ? "red.600"
+                      ? "purple.200"
                       : "gray.800",
                   }}
                   _active={{
                     bg: mynumbers.find((obj) => obj === num.num)
-                      ? "red.600"
+                      ? "purple.200"
                       : "gray.800",
                   }}
                   _hover={{
                     bg: mynumbers.find((obj) => obj === num.num)
-                      ? "red.600"
+                      ? "purple.200"
                       : "gray.800",
                   }}
                   key={num.num}
@@ -479,235 +570,6 @@ export default function Sorteio() {
         © 2021 - RIFA PMW, Todos os Direitos Reservados!
       </Box>
 
-      <Modal
-        isOpen={modalRegister}
-        onClose={() => setModalRegister(false)}
-        size="3xl"
-      >
-        <ModalOverlay />
-        <ModalContent borderWidth="3px" borderColor="green.400">
-          <ModalHeader>
-            <Flex align="center">
-              <Icon as={FaSave} />
-              <Text ml={3}>Cadastro</Text>
-            </Flex>
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Grid templateColumns="1fr" gap="15px">
-              <FormControl>
-                <FormLabel>Nome Completo</FormLabel>
-                <Input focusBorderColor="purple.400" />
-              </FormControl>
-            </Grid>
-            <Grid
-              mt={3}
-              templateColumns={[
-                "1fr",
-                "repeat(2, 1fr)",
-                "repeat(2, 1fr)",
-                "repeat(2, 1fr)",
-                "repeat(2, 1fr)",
-              ]}
-              gap="15px"
-            >
-              <FormControl>
-                <FormLabel>CPF</FormLabel>
-                <MaskedInput
-                  mask={[
-                    /[0-9]/,
-                    /\d/,
-                    /\d/,
-                    ".",
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                    ".",
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                    "-",
-                    /\d/,
-                    /\d/,
-                  ]}
-                  placeholder="CPF"
-                  render={(ref, props) => (
-                    <Input ref={ref} {...props} focusBorderColor="purple.400" />
-                  )}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Telefone</FormLabel>
-                <MaskedInput
-                  mask={[
-                    "(",
-                    /[0-9]/,
-                    /\d/,
-                    ")",
-                    " ",
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                    "-",
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                  ]}
-                  placeholder="Telefone"
-                  id="contact"
-                  render={(ref, props) => (
-                    <InputGroup>
-                      <InputLeftElement children={<FaWhatsapp />} />
-                      <Input
-                        placeholder="Telefone"
-                        ref={ref}
-                        {...props}
-                        focusBorderColor="purple.400"
-                      />
-                    </InputGroup>
-                  )}
-                />
-              </FormControl>
-            </Grid>
-            <Grid templateColumns="1fr" mt={3}>
-              <FormControl mb={3}>
-                <FormLabel>Email</FormLabel>
-                <Input focusBorderColor="purple.400" placeholder="Email" />
-              </FormControl>
-            </Grid>
-            <Divider mt={7} mb={4} />
-            <Grid
-              templateColumns={[
-                "1fr",
-                "3fr 1fr",
-                "3fr 1fr",
-                "3fr 1fr",
-                "3fr 1fr",
-              ]}
-              gap="15px"
-            >
-              <FormControl>
-                <FormLabel>
-                  Logradouro - Rua, Avenida, Alameda, etc...
-                </FormLabel>
-                <Input focusBorderColor="purple.400" />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Número</FormLabel>
-                <Input focusBorderColor="purple.400" />
-              </FormControl>
-            </Grid>
-            <Grid
-              templateColumns={[
-                "1fr",
-                "1fr 1fr",
-                "1fr 1fr",
-                "1fr 1fr",
-                "1fr 1fr",
-              ]}
-              mt={3}
-              gap="15px"
-            >
-              <FormControl>
-                <FormLabel>Ponto de Referência</FormLabel>
-                <Input focusBorderColor="purple.400" />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Bairro / Distrito</FormLabel>
-                <Input focusBorderColor="purple.400" />
-              </FormControl>
-            </Grid>
-            <Grid
-              templateColumns={[
-                "1fr",
-                "1fr 2fr 1fr",
-                "1fr 2fr 1fr",
-                "1fr 2fr 1fr",
-                "1fr 2fr 1fr",
-              ]}
-              mt={3}
-              gap="15px"
-            >
-              <FormControl>
-                <FormLabel>CEP</FormLabel>
-                <MaskedInput
-                  mask={[
-                    /[0-9]/,
-                    /\d/,
-                    ".",
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                    "-",
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                  ]}
-                  placeholder="CEP"
-                  render={(ref, props) => (
-                    <Input
-                      ref={ref}
-                      {...props}
-                      focusBorderColor={"purple.400"}
-                    />
-                  )}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Cidade</FormLabel>
-                <Input focusBorderColor="purple.400" />
-              </FormControl>
-              <FormControl>
-                <FormLabel>UF</FormLabel>
-                <Select
-                  placeholder="Selecione"
-                  variant="outline"
-                  focusBorderColor={"purple.400"}
-                  id="state"
-                >
-                  <option value="AC">AC</option>
-                  <option value="AL">AL</option>
-                  <option value="AP">AP</option>
-                  <option value="AM">AM</option>
-                  <option value="BA">BA</option>
-                  <option value="CE">CE</option>
-                  <option value="DF">DF</option>
-                  <option value="ES">ES</option>
-                  <option value="GO">GO</option>
-                  <option value="MA">MA</option>
-                  <option value="MT">MT</option>
-                  <option value="MS">MS</option>
-                  <option value="MG">MG</option>
-                  <option value="PA">PA</option>
-                  <option value="PB">PB</option>
-                  <option value="PR">PR</option>
-                  <option value="PE">PE</option>
-                  <option value="PI">PI</option>
-                  <option value="RJ">RJ</option>
-                  <option value="RN">RN</option>
-                  <option value="RS">RS</option>
-                  <option value="RO">RO</option>
-                  <option value="RR">RR</option>
-                  <option value="SC">SC</option>
-                  <option value="SP">SP</option>
-                  <option value="SE">SE</option>
-                  <option value="TO">TO</option>
-                </Select>
-              </FormControl>
-            </Grid>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button colorScheme="purple" leftIcon={<FaSave />}>
-              Cadastrar
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
       <Modal isOpen={modalSend} onClose={() => setModalSent(false)} size="lg">
         <ModalOverlay />
         <ModalContent borderWidth="3px" borderColor="green.400">
@@ -720,11 +582,18 @@ export default function Sorteio() {
               <Input
                 focusBorderColor="purple.400"
                 placeholder="Nome Completo"
+                value={client.name}
+                isReadOnly
               />
             </FormControl>
             <FormControl mb={3}>
               <FormLabel>Email</FormLabel>
-              <Input focusBorderColor="purple.400" placeholder="Email" />
+              <Input
+                focusBorderColor="purple.400"
+                placeholder="Email"
+                isReadOnly
+                value={client.email}
+              />
             </FormControl>
             <FormControl mb={3}>
               <FormLabel>CPF</FormLabel>
@@ -745,9 +614,15 @@ export default function Sorteio() {
                   /\d/,
                   /\d/,
                 ]}
+                value={client.cpf}
                 placeholder="CPF"
                 render={(ref, props) => (
-                  <Input ref={ref} {...props} focusBorderColor="purple.400" />
+                  <Input
+                    ref={ref}
+                    {...props}
+                    focusBorderColor="purple.400"
+                    isReadOnly
+                  />
                 )}
               />
             </FormControl>
@@ -773,6 +648,7 @@ export default function Sorteio() {
                 ]}
                 placeholder="Telefone"
                 id="contact"
+                value={client.phone}
                 render={(ref, props) => (
                   <InputGroup>
                     <InputLeftElement children={<FaWhatsapp />} />
@@ -781,12 +657,19 @@ export default function Sorteio() {
                       ref={ref}
                       {...props}
                       focusBorderColor="purple.400"
+                      isReadOnly
                     />
                   </InputGroup>
                 )}
               />
             </FormControl>
-            <Checkbox defaultIsChecked colorScheme="purple" mt={3}>
+            <Checkbox
+              defaultIsChecked
+              colorScheme="purple"
+              mt={3}
+              isChecked={concordo}
+              onChange={(e) => setConcordo(e.target.checked)}
+            >
               Reservando seu(s) número(s), você declara que leu e concorda com
               nossos{" "}
               <Link href="/condicoesdeuso" passHref>
@@ -801,40 +684,12 @@ export default function Sorteio() {
           </ModalBody>
 
           <ModalFooter>
-            <Menu placement="top">
-              <MenuButton
-                as={Button}
-                colorScheme="green"
-                variant="outline"
-                rightIcon={<MdKeyboardArrowUp />}
-              >
-                Opções
-              </MenuButton>
-              <MenuList shadow="lg" borderWidth="2px" borderColor="green.400">
-                <MenuItem
-                  _active={{ bg: "purple.100", color: "white" }}
-                  _focus={{ bg: "transparent" }}
-                  _hover={{ bg: "purple.100", color: "white" }}
-                  onClick={() => handleModal("cadastro")}
-                >
-                  CADASTRE-SE
-                </MenuItem>
-                <MenuItem
-                  _active={{ bg: "purple.100", color: "white" }}
-                  _focus={{ bg: "transparent" }}
-                  _hover={{ bg: "purple.100", color: "white" }}
-                  onClick={() => handleModal("login")}
-                >
-                  FAÇA LOGIN
-                </MenuItem>
-              </MenuList>
-            </Menu>
-
             <Button
               colorScheme="green"
               leftIcon={<FaCheck />}
               ml={3}
               onClick={() => handlePayment()}
+              isDisabled={!concordo}
             >
               Concluir
             </Button>
@@ -975,3 +830,31 @@ export default function Sorteio() {
     </>
   );
 }
+
+export const getStaticPaths = async () => {
+  const response = await fetch(`${configGloba.url}/findRaffle`);
+  const data = await response.json();
+  const paths = await data.map((raf) => {
+    return { params: { sorteio: raf.identify } };
+  });
+  return {
+    paths: paths,
+    fallback: false,
+  };
+};
+
+export const getStaticProps = async () => {
+  const response = await fetch(`${configGloba.url}/raffles`);
+  const data = await response.json();
+  let raffles = !data.raffles ? null : data.raffles;
+  let numbers = !data.numbers ? null : data.numbers;
+  let url = !data.url ? null : data.url;
+  return {
+    props: {
+      raffles,
+      numeros: numbers,
+      url,
+    },
+    revalidate: 30,
+  };
+};

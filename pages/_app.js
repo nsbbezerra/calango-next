@@ -5,14 +5,17 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import ClientProvider from "../context/Clients";
 import ConfigProvider from "../context/Configs";
+import NumbersProvider from "../context/Numbers";
 
 function MyApp({ Component, pageProps }) {
   return (
     <ClientProvider>
       <ConfigProvider>
-        <ChakraProvider resetCSS={true} theme={theme}>
-          <Component {...pageProps} />
-        </ChakraProvider>
+        <NumbersProvider>
+          <ChakraProvider resetCSS={true} theme={theme}>
+            <Component {...pageProps} />
+          </ChakraProvider>
+        </NumbersProvider>
       </ConfigProvider>
     </ClientProvider>
   );

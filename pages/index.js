@@ -12,7 +12,6 @@ import {
   Text,
   Divider,
   Icon,
-  Center,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import HeaderApp from "../components/header";
@@ -29,16 +28,31 @@ import { FaUserAlt } from "react-icons/fa";
 import configsGlobal from "../configs/index";
 import FooterApp from "../components/footer";
 import { useConfigs } from "../context/Configs";
-import { format, getHours, getMinutes } from "date-fns";
+import { format } from "date-fns";
 import pt_br from "date-fns/locale/pt-BR";
+import { useNumbers } from "../context/Numbers";
 
-export default function Home({ config, raffles, url }) {
-  const [total, setTotal] = useState(27);
+export default function Home({ config, raffles, url, numbers, banners }) {
   const { setConfigs } = useConfigs();
+  const { setNumbers } = useNumbers();
+
+  const [banner, setBanner] = useState([]);
 
   useEffect(() => {
     setConfigs(config);
   }, [config]);
+
+  useEffect(() => {
+    setNumbers(numbers);
+  }, [numbers]);
+
+  useEffect(() => {
+    if (!banners) {
+      setBanner([]);
+    } else {
+      setBanner(banners);
+    }
+  }, [banners]);
 
   const CustomArrow = ({ type, onClick, isEdge }) => {
     const pointer =
@@ -74,10 +88,27 @@ export default function Home({ config, raffles, url }) {
     );
   };
 
+  function calcPercent(id) {
+    if (numbers !== null) {
+      if (numbers.length === 0) {
+        return 0;
+      } else {
+        const result = numbers.filter((obj) => obj.raffle_id === id);
+        const finraffle = raffles.filter((obj) => obj.id === id);
+        let numSales = result.length;
+
+        let soma = (parseInt(numSales) * 100) / parseInt(finraffle.qtd_numbers);
+        return soma;
+      }
+    } else {
+      return 0;
+    }
+  }
+
   return (
     <>
       <HeaderApp />
-      <Container maxW="7xl" mt={10}>
+      <Container maxW="7xl" mt={20}>
         <Carousel
           itemsToShow={1}
           enableAutoPlay
@@ -85,97 +116,38 @@ export default function Home({ config, raffles, url }) {
           renderArrow={CustomArrowBanner}
           pagination={false}
         >
-          <LinkBox rounded="lg" overflow="hidden">
-            <Link passHref href="/sorteio">
-              <LinkOverlay>
-                <ChakraImage
-                  src="/img/banner.png"
-                  w="100%"
-                  h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
-                />
-              </LinkOverlay>
-            </Link>
-          </LinkBox>
-          <LinkBox rounded="lg" overflow="hidden">
-            <Link passHref href="/sorteio">
-              <LinkOverlay>
-                <ChakraImage
-                  src="/img/banner.png"
-                  w="100%"
-                  h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
-                />
-              </LinkOverlay>
-            </Link>
-          </LinkBox>
-          <LinkBox rounded="lg" overflow="hidden">
-            <Link passHref href="/sorteio">
-              <LinkOverlay>
-                <ChakraImage
-                  src="/img/banner.png"
-                  w="100%"
-                  h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
-                />
-              </LinkOverlay>
-            </Link>
-          </LinkBox>
-          <LinkBox rounded="lg" overflow="hidden">
-            <Link passHref href="/sorteio">
-              <LinkOverlay>
-                <ChakraImage
-                  src="/img/banner.png"
-                  w="100%"
-                  h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
-                />
-              </LinkOverlay>
-            </Link>
-          </LinkBox>
-          <LinkBox rounded="lg" overflow="hidden">
-            <Link passHref href="/sorteio">
-              <LinkOverlay>
-                <ChakraImage
-                  src="/img/banner.png"
-                  w="100%"
-                  h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
-                />
-              </LinkOverlay>
-            </Link>
-          </LinkBox>
-          <LinkBox rounded="lg" overflow="hidden">
-            <Link passHref href="/sorteio">
-              <LinkOverlay>
-                <ChakraImage
-                  src="/img/banner.png"
-                  w="100%"
-                  h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
-                />
-              </LinkOverlay>
-            </Link>
-          </LinkBox>
-          <LinkBox rounded="lg" overflow="hidden">
-            <Link passHref href="/sorteio">
-              <LinkOverlay>
-                <ChakraImage
-                  src="/img/banner.png"
-                  w="100%"
-                  h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
-                />
-              </LinkOverlay>
-            </Link>
-          </LinkBox>
+          {banner.length === 0 ? (
+            <Box rounded="lg" overflow="hidden">
+              <ChakraImage
+                src="/img/banner.png"
+                w="100%"
+                h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
+              />
+            </Box>
+          ) : (
+            <>
+              {banner.map((ban) => (
+                <LinkBox rounded="lg" overflow="hidden" key={ban.id}>
+                  <Link passHref href={`/sorteio/${ban.identify}`}>
+                    <LinkOverlay>
+                      <ChakraImage
+                        src={`${url}/${ban.banner}`}
+                        w="100%"
+                        h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
+                      />
+                    </LinkOverlay>
+                  </Link>
+                </LinkBox>
+              ))}
+            </>
+          )}
         </Carousel>
       </Container>
 
-      <Box pt={10} pb={10} bg="purple.400" mt={10}>
+      <Box pt={10} pb={10} bg="purple.400" mt={20}>
         <Container maxW="7xl">
-          {!raffles ? (
-            <Center>
-              <Heading
-                fontSize={["xl", "xl", "3xl", "3xl", "3xl"]}
-                color="white"
-              >
-                Nenhum sorteio cadastrado
-              </Heading>
-            </Center>
+          {!raffles || raffles.length === 0 ? (
+            ""
           ) : (
             <Carousel
               renderArrow={CustomArrow}
@@ -224,8 +196,7 @@ export default function Home({ config, raffles, url }) {
                   </Box>
                   <Slider
                     aria-label="slider-ex-4"
-                    onChange={(e) => setTotal(e)}
-                    defaultValue={total}
+                    value={calcPercent(raf.id)}
                     mt={-8}
                   >
                     <SliderTrack bg="purple.100">
@@ -237,7 +208,9 @@ export default function Home({ config, raffles, url }) {
                       borderColor="purple.100"
                       _focus={{ outline: "none" }}
                     >
-                      <Text fontSize="x-small">{total}%</Text>
+                      <Text fontSize="x-small">
+                        {calcPercent(raf.id).toString()}%
+                      </Text>
                     </SliderThumb>
                   </Slider>
                   <Box p={2} mt={-3} w="260px">
@@ -268,7 +241,11 @@ export default function Home({ config, raffles, url }) {
                       <Text fontWeight="300" mr={2}>
                         R$
                       </Text>
-                      <Text fontWeight="800">{raf.raffle_value}</Text>
+                      <Text fontWeight="800">
+                        {parseFloat(raf.raffle_value).toLocaleString("pt-br", {
+                          minimumFractionDigits: 2,
+                        })}
+                      </Text>
                     </Flex>
                     <Divider mt={1} mb={1} />
                     <Flex align="center" fontSize="xs">
@@ -397,12 +374,15 @@ export const getStaticProps = async () => {
   let conf = !data.configs ? null : data.configs;
   let raf = !data.raffles ? null : data.raffles;
   let url = !data.url ? null : data.url;
-
+  let numbers = !data.numbers ? null : data.numbers;
+  let banners = !data.banners ? null : data.banners;
   return {
     props: {
       config: conf,
       raffles: raf,
       url: url,
+      numbers,
+      banners,
     },
     revalidate: 30,
   };
