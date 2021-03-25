@@ -6,15 +6,21 @@ import "react-datepicker/dist/react-datepicker.css";
 import ClientProvider from "../context/Clients";
 import ConfigProvider from "../context/Configs";
 import NumbersProvider from "../context/Numbers";
+import ModalRegisterProvider from "../context/ModalRegister";
+import ModalLoginProvider from "../context/ModalLogin";
 
 function MyApp({ Component, pageProps }) {
   return (
     <ClientProvider>
       <ConfigProvider>
         <NumbersProvider>
-          <ChakraProvider resetCSS={true} theme={theme}>
-            <Component {...pageProps} />
-          </ChakraProvider>
+          <ModalRegisterProvider>
+            <ModalLoginProvider>
+              <ChakraProvider resetCSS={true} theme={theme}>
+                <Component {...pageProps} />
+              </ChakraProvider>
+            </ModalLoginProvider>
+          </ModalRegisterProvider>
         </NumbersProvider>
       </ConfigProvider>
     </ClientProvider>

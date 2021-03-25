@@ -27,13 +27,9 @@ import {
   InputGroup,
   Input,
   Divider,
-  Select,
   Checkbox,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   Center,
+  IconButton,
 } from "@chakra-ui/react";
 import {
   Slider,
@@ -45,9 +41,8 @@ import {
   BreadcrumbLink,
 } from "../../components/sliders";
 import Image from "next/image";
-import { FaCheck, FaSave, FaWhatsapp } from "react-icons/fa";
+import { FaCheck, FaCopy, FaSave, FaTrash, FaWhatsapp } from "react-icons/fa";
 import { AiFillBank, AiOutlineLogin } from "react-icons/ai";
-import { MdKeyboardArrowUp } from "react-icons/md";
 import MaskedInput from "react-text-mask";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -55,24 +50,43 @@ import configGloba from "../../configs/index";
 import { format } from "date-fns";
 import pt_br from "date-fns/locale/pt-BR";
 import { useClient } from "../../context/Clients";
+import { useLoginModal } from "../../context/ModalLogin";
+import { useRegisterModal } from "../../context/ModalRegister";
+import api from "../../configs/axios";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+import useFetch from "../../hooks/useFetch";
 
-export default function Sorteio({ raffles, numeros, url }) {
+export default function Sorteio({ raffles, nu, url, configs }) {
   const { query, isFallback, back } = useRouter();
   const toast = useToast();
   const { client } = useClient();
+  const { setOpenRegister } = useRegisterModal();
+  const { setOpenLogin } = useLoginModal();
+  const { data, error } = useFetch(`/numbers/${query.sorteio}`);
+
+  console.log("ERRO", error);
+
+  useEffect(() => {
+    console.log(data);
+    if (data) {
+      setNums(data);
+    }
+  }, [data]);
 
   const [numbers, setNumbers] = useState([]);
   const [mynumbers, setMynumbers] = useState([]);
   const [amount, setAmount] = useState(0);
 
   const [modalSend, setModalSent] = useState(false);
-  const [modalRegister, setModalRegister] = useState(false);
-  const [modalLogin, setModalLogin] = useState(false);
   const [modalPayment, setModalPayment] = useState(false);
 
   const [raffle, setRaffle] = useState({});
   const [nums, setNums] = useState([]); //Para compara os números, Livres, Reservados e Pagos
   const [percent, setPercent] = useState(0);
+
+  useEffect(() => {
+    console.log(mynumbers);
+  }, [mynumbers]);
 
   const [free, setFree] = useState(0);
   const [reserved, setReserved] = useState(0);
@@ -84,7 +98,7 @@ export default function Sorteio({ raffles, numeros, url }) {
   useEffect(() => {
     if (raffles) {
       findActRaffle(query.sorteio);
-      if (numeros !== null) {
+      if (nums !== null) {
         findPercent();
       }
     }
@@ -96,26 +110,17 @@ export default function Sorteio({ raffles, numeros, url }) {
     setFree(parseInt(result.qtd_numbers));
   }
 
-  useEffect(() => {
-    if (!numeros) {
-      setNums([]);
-    } else {
-      setNums(numeros);
-      findNumbersInfo();
-    }
-  }, [numeros]);
-
   async function findNumbersInfo() {}
 
   async function findPercent() {
-    if (numeros !== null) {
-      if (numeros.length === 0) {
+    if (nums !== null) {
+      if (nums.length === 0) {
         setPercent(0);
       } else {
         if (JSON.stringify(raffle) === "{}") {
           setPercent(0);
         } else {
-          const result = numeros.filter((obj) => obj.raffle_id === raffle.id);
+          const result = nums.filter((obj) => obj.raffle_id === raffle.id);
           const findActive = result.filter((obj) => obj.status === "paid_out");
           let numSales = findActive.length;
 
@@ -174,16 +179,6 @@ export default function Sorteio({ raffles, numeros, url }) {
     }
   }
 
-  function handleModal(mode) {
-    if (mode === "login") {
-      setModalSent(false);
-      setModalLogin(true);
-    } else {
-      setModalSent(false);
-      setModalRegister(true);
-    }
-  }
-
   function handlePayment() {
     setModalSent(false);
     setModalPayment(true);
@@ -197,6 +192,11 @@ export default function Sorteio({ raffles, numeros, url }) {
     });
     let joined = toJoin.join(" ");
     return joined;
+  }
+
+  function clearNumbers() {
+    setMynumbers([]);
+    setAmount(0);
   }
 
   return (
@@ -540,7 +540,27 @@ export default function Sorteio({ raffles, numeros, url }) {
                 })}
               </StatNumber>
             </Stat>
-            <Flex justify="flex-end">
+            <Flex
+              justify="flex-end"
+              direction={["column", "row", "row", "row", "row"]}
+            >
+              <Button
+                leftIcon={<FaTrash />}
+                colorScheme="red"
+                w={[
+                  "100%",
+                  "max-content",
+                  "max-content",
+                  "max-content",
+                  "max-content",
+                ]}
+                size="lg"
+                onClick={() => clearNumbers()}
+                mr={[0, 5, 5, 5, 5]}
+                mb={[5, 0, 0, 0, 0]}
+              >
+                Limpar Números
+              </Button>
               <Button
                 leftIcon={<FaCheck />}
                 colorScheme="green"
@@ -576,111 +596,139 @@ export default function Sorteio({ raffles, numeros, url }) {
           <ModalHeader>Reserva de Número</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Text>Por favor verifique se seus dados estão corretos!</Text>
-            <FormControl mb={3} mt={3}>
-              <FormLabel>Nome Completo</FormLabel>
-              <Input
-                focusBorderColor="purple.400"
-                placeholder="Nome Completo"
-                value={client.name}
-                isReadOnly
-              />
-            </FormControl>
-            <FormControl mb={3}>
-              <FormLabel>Email</FormLabel>
-              <Input
-                focusBorderColor="purple.400"
-                placeholder="Email"
-                isReadOnly
-                value={client.email}
-              />
-            </FormControl>
-            <FormControl mb={3}>
-              <FormLabel>CPF</FormLabel>
-              <MaskedInput
-                mask={[
-                  /[0-9]/,
-                  /\d/,
-                  /\d/,
-                  ".",
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  ".",
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  "-",
-                  /\d/,
-                  /\d/,
-                ]}
-                value={client.cpf}
-                placeholder="CPF"
-                render={(ref, props) => (
+            {JSON.stringify(client) === "{}" || !client ? (
+              <Flex justify="center" align="center" direction="column">
+                <Button
+                  size="lg"
+                  isFullWidth
+                  colorScheme="purple"
+                  leftIcon={<FaSave />}
+                  variant="outline"
+                  onClick={() => setOpenRegister(true)}
+                >
+                  CADASTRE-SE
+                </Button>
+                <Button
+                  size="lg"
+                  isFullWidth
+                  colorScheme="purple"
+                  leftIcon={<AiOutlineLogin />}
+                  mt={5}
+                  variant="outline"
+                  onClick={() => setOpenLogin(true)}
+                >
+                  FAÇA LOGIN
+                </Button>
+              </Flex>
+            ) : (
+              <>
+                <Text>Por favor verifique se seus dados estão corretos!</Text>
+                <FormControl mb={3} mt={3}>
+                  <FormLabel>Nome Completo</FormLabel>
                   <Input
-                    ref={ref}
-                    {...props}
                     focusBorderColor="purple.400"
+                    placeholder="Nome Completo"
+                    value={client.name}
                     isReadOnly
                   />
-                )}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Telefone</FormLabel>
-              <MaskedInput
-                mask={[
-                  "(",
-                  /[0-9]/,
-                  /\d/,
-                  ")",
-                  " ",
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  "-",
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                ]}
-                placeholder="Telefone"
-                id="contact"
-                value={client.phone}
-                render={(ref, props) => (
-                  <InputGroup>
-                    <InputLeftElement children={<FaWhatsapp />} />
-                    <Input
-                      placeholder="Telefone"
-                      ref={ref}
-                      {...props}
-                      focusBorderColor="purple.400"
-                      isReadOnly
-                    />
-                  </InputGroup>
-                )}
-              />
-            </FormControl>
-            <Checkbox
-              defaultIsChecked
-              colorScheme="purple"
-              mt={3}
-              isChecked={concordo}
-              onChange={(e) => setConcordo(e.target.checked)}
-            >
-              Reservando seu(s) número(s), você declara que leu e concorda com
-              nossos{" "}
-              <Link href="/condicoesdeuso" passHref>
-                <a
-                  target="_blank"
-                  style={{ color: "blue", textDecoration: "underline" }}
+                </FormControl>
+                <FormControl mb={3}>
+                  <FormLabel>Email</FormLabel>
+                  <Input
+                    focusBorderColor="purple.400"
+                    placeholder="Email"
+                    isReadOnly
+                    value={client.email}
+                  />
+                </FormControl>
+                <FormControl mb={3}>
+                  <FormLabel>CPF</FormLabel>
+                  <MaskedInput
+                    mask={[
+                      /[0-9]/,
+                      /\d/,
+                      /\d/,
+                      ".",
+                      /\d/,
+                      /\d/,
+                      /\d/,
+                      ".",
+                      /\d/,
+                      /\d/,
+                      /\d/,
+                      "-",
+                      /\d/,
+                      /\d/,
+                    ]}
+                    value={client.cpf}
+                    placeholder="CPF"
+                    render={(ref, props) => (
+                      <Input
+                        ref={ref}
+                        {...props}
+                        focusBorderColor="purple.400"
+                        isReadOnly
+                      />
+                    )}
+                  />
+                </FormControl>
+                <FormControl>
+                  <FormLabel>Telefone</FormLabel>
+                  <MaskedInput
+                    mask={[
+                      "(",
+                      /[0-9]/,
+                      /\d/,
+                      ")",
+                      " ",
+                      /\d/,
+                      /\d/,
+                      /\d/,
+                      /\d/,
+                      /\d/,
+                      "-",
+                      /\d/,
+                      /\d/,
+                      /\d/,
+                      /\d/,
+                    ]}
+                    placeholder="Telefone"
+                    id="contact"
+                    value={client.phone}
+                    render={(ref, props) => (
+                      <InputGroup>
+                        <InputLeftElement children={<FaWhatsapp />} />
+                        <Input
+                          placeholder="Telefone"
+                          ref={ref}
+                          {...props}
+                          focusBorderColor="purple.400"
+                          isReadOnly
+                        />
+                      </InputGroup>
+                    )}
+                  />
+                </FormControl>
+                <Checkbox
+                  defaultIsChecked
+                  colorScheme="purple"
+                  mt={3}
+                  isChecked={concordo}
+                  onChange={(e) => setConcordo(e.target.checked)}
                 >
-                  Termos de uso
-                </a>
-              </Link>
-            </Checkbox>
+                  Reservando seu(s) número(s), você declara que leu e concorda
+                  com nossos{" "}
+                  <Link href="/condicoesdeuso" passHref>
+                    <a
+                      target="_blank"
+                      style={{ color: "blue", textDecoration: "underline" }}
+                    >
+                      Termos de uso
+                    </a>
+                  </Link>
+                </Checkbox>
+              </>
+            )}
           </ModalBody>
 
           <ModalFooter>
@@ -692,57 +740,6 @@ export default function Sorteio({ raffles, numeros, url }) {
               isDisabled={!concordo}
             >
               Concluir
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      <Modal
-        isOpen={modalLogin}
-        onClose={() => setModalLogin(false)}
-        isCentered
-        size="sm"
-      >
-        <ModalOverlay />
-        <ModalContent borderWidth="3px" borderColor="green.400">
-          <ModalHeader>
-            <Flex align="center">
-              <Icon as={AiOutlineLogin} />
-              <Text ml={3}>Login</Text>
-            </Flex>
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <FormControl>
-              <FormLabel>CPF</FormLabel>
-              <MaskedInput
-                mask={[
-                  /[0-9]/,
-                  /\d/,
-                  /\d/,
-                  ".",
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  ".",
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  "-",
-                  /\d/,
-                  /\d/,
-                ]}
-                placeholder="CPF"
-                render={(ref, props) => (
-                  <Input ref={ref} {...props} focusBorderColor="purple.400" />
-                )}
-              />
-            </FormControl>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button colorScheme="purple" leftIcon={<AiOutlineLogin />}>
-              Login
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -783,11 +780,38 @@ export default function Sorteio({ raffles, numeros, url }) {
                   />
                 </Box>
                 <Divider />
-                <Box p={3}>
+                <Box p={3} fontSize="sm">
                   <Text>Chave:</Text>
-                  <Text mt={2}>
-                    CPF <strong>000.000.000-00</strong>
-                  </Text>
+                  {raffle.pix_keys ? (
+                    <>
+                      {raffle.pix_keys.map((pi) => (
+                        <CopyToClipboard
+                          key={pi.pix}
+                          text={pi.pix}
+                          onCopy={() =>
+                            showToast(
+                              `Valor: ${pi.pix} copiado para área de transferência.`,
+                              "info",
+                              "Informação"
+                            )
+                          }
+                        >
+                          <HStack spacing="10px">
+                            <Text mt={2}>
+                              {pi.type}: <strong>{pi.pix}</strong>
+                            </Text>
+                            <IconButton
+                              icon={<FaCopy />}
+                              size="xs"
+                              colorScheme="purple"
+                            />
+                          </HStack>
+                        </CopyToClipboard>
+                      ))}
+                    </>
+                  ) : (
+                    ""
+                  )}
                 </Box>
               </Box>
               <Box borderWidth="1px" rounded="lg">
@@ -800,7 +824,7 @@ export default function Sorteio({ raffles, numeros, url }) {
                   />
                 </Box>
                 <Divider />
-                <Box p={3}>
+                <Box p={3} fontSize="sm">
                   <Text>
                     Agencia: <strong>0000-00</strong>
                   </Text>
@@ -821,9 +845,19 @@ export default function Sorteio({ raffles, numeros, url }) {
               com o administrador da rifa para confirmar o pagamento, use este
               número:{" "}
             </Text>
-            <Button colorScheme="green" leftIcon={<FaWhatsapp />} mt={3}>
-              (63) 99999-9999
-            </Button>
+            <Link
+              href={`https://wa.me/+55${configs.admin_phone.replace(
+                /([\u0300-\u036f]|[^0-9a-zA-Z])/g,
+                ""
+              )}`}
+              passHref
+            >
+              <a target={"_blank"}>
+                <Button colorScheme="green" leftIcon={<FaWhatsapp />} mt={3}>
+                  {configs.admin_phone ? configs.admin_phone : ""}
+                </Button>
+              </a>
+            </Link>
           </ModalBody>
         </ModalContent>
       </Modal>
@@ -847,13 +881,13 @@ export const getStaticProps = async () => {
   const response = await fetch(`${configGloba.url}/raffles`);
   const data = await response.json();
   let raffles = !data.raffles ? null : data.raffles;
-  let numbers = !data.numbers ? null : data.numbers;
+  let configs = !data.configs ? null : data.configs;
   let url = !data.url ? null : data.url;
   return {
     props: {
       raffles,
-      numeros: numbers,
       url,
+      configs,
     },
     revalidate: 30,
   };

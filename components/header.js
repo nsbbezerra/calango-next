@@ -44,6 +44,8 @@ import Image from "next/image";
 import Link from "next/link";
 import MaskedInput from "react-text-mask";
 import { AiOutlineLogin, AiOutlineLogout } from "react-icons/ai";
+import { useRegisterModal } from "../context/ModalRegister";
+import { useLoginModal } from "../context/ModalLogin";
 
 import { useClient } from "../context/Clients";
 import api from "../configs/axios";
@@ -54,9 +56,8 @@ export default function HeaderApp() {
   const { client, setClient } = useClient();
   const toast = useToast();
   const { push } = useRouter();
-
-  const [modalLogin, setModalLogin] = useState(false);
-  const [modalRegister, setModalRegister] = useState(false);
+  const { openRegister, setOpenRegister } = useRegisterModal();
+  const { openLogin, setOpenLogin } = useLoginModal();
 
   const [validators, setValidators] = useState([]);
 
@@ -206,7 +207,7 @@ export default function HeaderApp() {
         state,
       });
       showToast(response.data.message, "success", "Sucesso");
-      setModalRegister(false);
+      setOpenRegister(false);
       setLoading(false);
       clear();
     } catch (error) {
@@ -242,7 +243,7 @@ export default function HeaderApp() {
       setLoading(false);
       setClient(response.data);
       clear();
-      setModalLogin(false);
+      setOpenLogin(false);
     } catch (error) {
       setLoading(false);
       if (error.message === "Network Error") {
@@ -326,7 +327,7 @@ export default function HeaderApp() {
                         _active={{ bg: "purple.100", color: "white" }}
                         _focus={{ bg: "transparent" }}
                         _hover={{ bg: "purple.100", color: "white" }}
-                        onClick={() => setModalRegister(true)}
+                        onClick={() => setOpenRegister(true)}
                       >
                         CADASTRE-SE
                       </MenuItem>
@@ -334,7 +335,7 @@ export default function HeaderApp() {
                         _active={{ bg: "purple.100", color: "white" }}
                         _focus={{ bg: "transparent" }}
                         _hover={{ bg: "purple.100", color: "white" }}
-                        onClick={() => setModalLogin(true)}
+                        onClick={() => setOpenLogin(true)}
                       >
                         FAÇA LOGIN
                       </MenuItem>
@@ -448,7 +449,7 @@ export default function HeaderApp() {
                         _active={{ bg: "purple.100", color: "white" }}
                         _focus={{ bg: "transparent" }}
                         _hover={{ bg: "purple.100", color: "white" }}
-                        onClick={() => setModalRegister(true)}
+                        onClick={() => setOpenRegister(true)}
                       >
                         CADASTRE-SE
                       </MenuItem>
@@ -456,7 +457,7 @@ export default function HeaderApp() {
                         _active={{ bg: "purple.100", color: "white" }}
                         _focus={{ bg: "transparent" }}
                         _hover={{ bg: "purple.100", color: "white" }}
-                        onClick={() => setModalLogin(true)}
+                        onClick={() => setOpenLogin(true)}
                       >
                         FAÇA LOGIN
                       </MenuItem>
@@ -565,8 +566,8 @@ export default function HeaderApp() {
       </Box>
 
       <Modal
-        isOpen={modalLogin}
-        onClose={() => setModalLogin(false)}
+        isOpen={openLogin}
+        onClose={() => setOpenLogin(false)}
         isCentered
         size="sm"
       >
@@ -634,8 +635,8 @@ export default function HeaderApp() {
       </Modal>
 
       <Modal
-        isOpen={modalRegister}
-        onClose={() => setModalRegister(false)}
+        isOpen={openRegister}
+        onClose={() => setOpenRegister(false)}
         size="3xl"
       >
         <ModalOverlay />
