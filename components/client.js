@@ -16,50 +16,30 @@ import {
   ModalOverlay,
   ModalContent,
   ModalHeader,
-  ModalFooter,
   ModalBody,
   ModalCloseButton,
   FormControl,
   FormLabel,
   InputGroup,
   Input,
-  InputRightElement,
   Select,
   InputLeftElement,
   HStack,
 } from "@chakra-ui/react";
 import Image from "next/image";
-import { useState } from "react";
-import {
-  FaWhatsapp,
-  FaUserAlt,
-  FaArrowUp,
-  FaTrash,
-  FaCalendarAlt,
-  FaExchangeAlt,
-  FaIdCard,
-} from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { FaWhatsapp, FaUserAlt, FaArrowUp, FaIdCard } from "react-icons/fa";
 import { Slider, SliderFilledTrack, SliderThumb, SliderTrack } from "./sliders";
 import MaskedInput from "react-text-mask";
 import { ImListNumbered } from "react-icons/im";
 
-export default function Admin() {
+export default function Client({ info, url }) {
   const [modalCancel, setModalCancel] = useState(false);
   const [modalEdit, setModalEdit] = useState(false);
 
-  const [startDate, setStartDate] = useState(new Date());
-
-  const CustomInputPicker = ({ value, onClick }) => (
-    <InputGroup>
-      <Input
-        focusBorderColor="purple.400"
-        defaultValue={value}
-        onClick={onClick}
-        w="265px"
-      />
-      <InputRightElement pointerEvents="none" children={<FaCalendarAlt />} />
-    </InputGroup>
-  );
+  useEffect(() => {
+    console.log("CLIENT", info);
+  }, [info]);
 
   return (
     <>
@@ -166,6 +146,7 @@ export default function Admin() {
               colorScheme="purple"
               isFullWidth
               mt={2}
+              size="sm"
             >
               Opções
             </MenuButton>

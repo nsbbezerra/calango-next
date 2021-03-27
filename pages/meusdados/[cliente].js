@@ -27,7 +27,7 @@ import {
 } from "../../components/sliders";
 import Link from "next/link";
 import { FaBars, FaWhatsapp, FaSave } from "react-icons/fa";
-
+import configGlobal from "../../configs/index";
 import MaskedInput from "react-text-mask";
 import Admin from "../../components/admin";
 import Client from "../../components/client";
@@ -35,13 +35,11 @@ import { useClient } from "../../context/Clients";
 import api from "../../configs/axios";
 import { useRouter } from "next/router";
 
-export default function MeusDados() {
+export default function MeusDados({ information }) {
+  const { query, isFallback } = useRouter();
   const { client, setClient } = useClient();
   const toast = useToast();
-  const { query } = useRouter();
-
   const [page, setPage] = useState("data");
-
   const [validators, setValidators] = useState([]);
 
   const [name, setName] = useState("");
@@ -57,6 +55,17 @@ export default function MeusDados() {
   const [state, setState] = useState("");
 
   const [loading, setLoading] = useState(false);
+
+  const [url, setUrl] = useState("");
+  const [configs, setConfigs] = useState({});
+
+  useEffect(() => {
+    console.log(information);
+    if (information !== null) {
+      setUrl(information.url);
+      setConfigs(information.configs);
+    }
+  }, [information]);
 
   useEffect(() => {
     if (JSON.stringify(client) !== "{}") {
@@ -253,7 +262,7 @@ export default function MeusDados() {
               </Button>
             </Flex>
           </Box>
-          <Box borderWidth="1px" rounded="lg" p={3}>
+          <Box borderWidth="1px" rounded="lg" p={3} h="min-content">
             {page === "data" && (
               <>
                 <Grid templateColumns="1fr" gap="15px">
@@ -655,8 +664,12 @@ export default function MeusDados() {
                 </Button>
               </>
             )}
-            {page === "admin" && <Admin />}
-            {page === "client" && <Client />}
+            {page === "admin" && (
+              <Admin info={query.cliente} url={url} configs={configs} />
+            )}
+            {page === "client" && (
+              <Client info={query.cliente} url={url} configs={configs} />
+            )}
           </Box>
         </Grid>
       </Container>
@@ -664,3 +677,27 @@ export default function MeusDados() {
     </>
   );
 }
+
+export const getStaticPaths = async () => {
+  const response = await fetch(`${configGlobal.url}/clients`);
+  const data = await response.json();
+  const paths = await data.map((cli) => {
+    return { params: { cliente: cli.identify } };
+  });
+  return {
+    paths: paths,
+    fallback: false,
+  };
+};
+
+export const getStaticProps = async () => {
+  const response = await fetch(`${configGlobal.url}/mydata`);
+  const data = await response.json();
+  let info = !data ? null : data;
+  return {
+    props: {
+      information: info,
+    },
+    revalidate: 30,
+  };
+};

@@ -126,6 +126,15 @@ export default function Sorteio({ raffles, url }) {
 
   const [loading, setLoading] = useState(false);
 
+  function showToast(message, status, title) {
+    toast({
+      title: title,
+      description: message,
+      status: status,
+      position: "bottom-right",
+    });
+  }
+
   if (error) {
     if (error.message === "Network Error") {
       alert(
@@ -167,15 +176,6 @@ export default function Sorteio({ raffles, url }) {
       }
       setNumbers(number);
     }
-  }
-
-  function showToast(message, status, title) {
-    toast({
-      title: title,
-      description: message,
-      status: status,
-      position: "bottom-right",
-    });
   }
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import useSwr from "swr";
 import api from "../configs/axios";
 
 export default function useFetch(url) {
-  const { data, error } = useSwr(
+  const { data, error, mutate } = useSwr(
     [url],
     async (url) => {
       const response = await api.get(url);
@@ -14,5 +14,5 @@ export default function useFetch(url) {
     }
   );
 
-  return { data, error };
+  return { data, error, mutate };
 }
