@@ -15,12 +15,6 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import HeaderApp from "../components/header";
-import {
-  Slider,
-  SliderFilledTrack,
-  SliderTrack,
-  SliderThumb,
-} from "../components/sliders";
 import Carousel from "react-elastic-carousel";
 import Image from "next/image";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
@@ -30,11 +24,9 @@ import FooterApp from "../components/footer";
 import { useConfigs } from "../context/Configs";
 import { format } from "date-fns";
 import pt_br from "date-fns/locale/pt-BR";
-import { useNumbers } from "../context/Numbers";
 
 export default function Home({ config, raffles, url, banners }) {
   const { setConfigs } = useConfigs();
-  const { setNumbers } = useNumbers();
 
   const [banner, setBanner] = useState([]);
 

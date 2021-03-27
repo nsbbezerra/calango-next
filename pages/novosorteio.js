@@ -188,7 +188,7 @@ export default function NovoSorteio({ config }) {
       title: title,
       description: message,
       status: status,
-      position: "top-right",
+      position: "bottom-right",
     });
   }
 

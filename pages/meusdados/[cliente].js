@@ -88,7 +88,7 @@ export default function MeusDados() {
       title: title,
       description: message,
       status: status,
-      position: "top-right",
+      position: "bottom-right",
     });
   }
 

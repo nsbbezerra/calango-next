@@ -30,12 +30,9 @@ import {
   Checkbox,
   Center,
   IconButton,
+  Skeleton,
 } from "@chakra-ui/react";
 import {
-  Slider,
-  SliderFilledTrack,
-  SliderThumb,
-  SliderTrack,
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -55,9 +52,52 @@ import { useRegisterModal } from "../../context/ModalRegister";
 import api from "../../configs/axios";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import useFetch from "../../hooks/useFetch";
+import FooterApp from "../../components/footerTotal";
 
 export default function Sorteio({ raffles, url }) {
-  const { query, isFallback, back } = useRouter();
+  const { query, isFallback } = useRouter();
+
+  if (isFallback) {
+    return (
+      <>
+        <HeaderApp />
+        <Container maxW="6xl">
+          <Grid
+            templateColumns={[
+              "1fr",
+              "1fr",
+              "220px 1fr",
+              "220px 1fr",
+              "220px 1fr",
+            ]}
+            gap="40px"
+            justifyItems="center"
+            alignItems="center"
+            mt={10}
+            mb={10}
+          >
+            <Box w="220px" h="220px">
+              <Skeleton h="220px" w="220px" rounded="lg" />
+            </Box>
+            <Box w="100%">
+              <Skeleton h="40px" w="100%" mb={5} />
+
+              <Flex
+                direction={["column", "column", "column", "row", "row"]}
+                justifyContent="space-between"
+              >
+                <Skeleton h="30px" w="250px" />
+                <Skeleton h="30px" w="250px" />
+              </Flex>
+              <Skeleton h="110px" w="100%" mt={3} />
+            </Box>
+          </Grid>
+        </Container>
+        <FooterApp />
+      </>
+    );
+  }
+
   const toast = useToast();
   const { client } = useClient();
   const { setOpenRegister } = useRegisterModal();
@@ -81,11 +121,20 @@ export default function Sorteio({ raffles, url }) {
 
   const [raffle, setRaffle] = useState({});
   const [nums, setNums] = useState([]); //Para compara os números, Livres, Reservados e Pagos
-  const [percent, setPercent] = useState(0);
 
   const [concordo, setConcordo] = useState(0);
 
   const [loading, setLoading] = useState(false);
+
+  if (error) {
+    if (error.message === "Network Error") {
+      alert(
+        "Sem conexão com o servidor, verifique sua conexão com a internet."
+      );
+    } else {
+      showToast("Ocorreu um erro inesperado", "error", "Erro");
+    }
+  }
 
   useEffect(() => {
     if (raffles) {
@@ -125,7 +174,7 @@ export default function Sorteio({ raffles, url }) {
       title: title,
       description: message,
       status: status,
-      position: "top-right",
+      position: "bottom-right",
     });
   }
 
@@ -170,6 +219,7 @@ export default function Sorteio({ raffles, url }) {
       setModalPayment(true);
       setAmount(0);
       setMynumbers([]);
+      setConcordo(false);
       setModalSent(false);
       setLoading(false);
       showToast(response.data.message, "success", "Sucesso");
@@ -907,8 +957,9 @@ export default function Sorteio({ raffles, url }) {
             </Grid>
             <Text mt={3}>
               Escolha uma das opções de pagamento acima depois entre em contato
-              com o administrador da rifa para confirmar o pagamento, use este
-              número:{" "}
+              com o administrador da rifa através do botão verde abaixo para
+              confirmar o pagamento, seus números e as informações deste sorteio
+              estão disponível na sessão MEUS DADOS.
             </Text>
             <Link
               href={
@@ -942,7 +993,7 @@ export const getStaticPaths = async () => {
   });
   return {
     paths: paths,
-    fallback: false,
+    fallback: true,
   };
 };
 
