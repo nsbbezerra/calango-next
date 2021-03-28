@@ -37,6 +37,12 @@ import {
   Spinner,
   useToast,
   Select,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from "@chakra-ui/react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
@@ -59,6 +65,10 @@ import useFetch from "../hooks/useFetch";
 import api from "../configs/axios";
 import { mutate as mutateGlobal } from "swr";
 
+import Slot from "../assets/slot.json";
+import Congrat from "../assets/congrat.json";
+import Lottie from "../components/lottie";
+
 registerLocale("pt_br", pt_br);
 
 export default function Admin({ info, url, configs }) {
@@ -79,6 +89,12 @@ export default function Admin({ info, url, configs }) {
   const [numbersFind, setNumbersFind] = useState([]);
   const [search, setSearch] = useState("all");
   const [text, setText] = useState("");
+  const [justification, setJustification] = useState("");
+  const [loadingJustify, setLoadingJustify] = useState(false);
+  const [modalSlot, setModalSlot] = useState(false);
+  const [drawn, setDrawn] = useState(false);
+  const [alert, setAlert] = useState(false);
+  const [drawnNumber, setDrawnNumbers] = useState({});
 
   useEffect(() => {
     if (data !== undefined) {
@@ -162,7 +178,6 @@ export default function Admin({ info, url, configs }) {
     setId(id);
     try {
       const response = await api.get(`/numbersAdmin/${id}`);
-      console.log(response);
       setNumbers(response.data);
       setNumbersFind(response.data);
       setModalNumbers(true);
@@ -218,10 +233,116 @@ export default function Admin({ info, url, configs }) {
       const response = await api.put(`/numbersActive/${id}`);
       setNumbers(response.data.numbers);
       setNumbersFind(response.data.numbers);
+      setText("");
+      setSearch("all");
       showToast(response.data.message, "success", "Sucesso");
       setLoadingNumber(false);
     } catch (error) {
       setLoadingNumber(false);
+      if (error.message === "Network Error") {
+        alert(
+          "Sem conexão com o servidor, verifique sua conexão com a internet."
+        );
+        return false;
+      }
+      let mess = !error.response.data
+        ? "Erro no cadastro do cliente"
+        : error.response.data.message;
+      showToast(mess, "error", "Erro");
+    }
+  }
+
+  function handleJustification(id) {
+    setId(id);
+    setModalCancel(true);
+  }
+
+  async function sendCancel() {
+    if (justification === "") {
+      showToast("Insira uma justificativa", "warning", "Atenção");
+      return false;
+    }
+    setLoadingJustify(true);
+    try {
+      const response = await api.put(`/blockRaffle/${id}`, {
+        justify: justification,
+      });
+      const updated = await data.map((raf) => {
+        if (raf.id === id) {
+          return {
+            ...raf,
+            justify: response.data.raffle[0].justify,
+            status: response.data.raffle[0].status,
+          };
+        }
+        return raf;
+      });
+      mutate(updated, false);
+      mutateGlobal(`/blockRaffle/${id}`, {
+        id: id,
+        justify: response.data.raffle[0].justify,
+        status: response.data.raffle[0].status,
+      });
+      showToast(response.data.message, "success", "Sucesso");
+      setJustification("");
+      setModalCancel(false);
+      setLoadingJustify(false);
+    } catch (error) {
+      setLoadingJustify(false);
+      if (error.message === "Network Error") {
+        alert(
+          "Sem conexão com o servidor, verifique sua conexão com a internet."
+        );
+        return false;
+      }
+      let mess = !error.response.data
+        ? "Erro no cadastro do cliente"
+        : error.response.data.message;
+      showToast(mess, "error", "Erro");
+    }
+  }
+
+  function handleCloseDrawn() {
+    setDrawn(true);
+    setModalSlot(false);
+    setDrawnNumbers({});
+  }
+
+  function handleDrawn(id) {
+    setId(id);
+    setAlert(true);
+  }
+
+  async function sendDrawn() {
+    setAlert(false);
+    setModalSlot(true);
+    setDrawn(true);
+    try {
+      const response = await api.put(`/drawn/${id}`);
+      console.log(response);
+      setTimeout(() => {
+        setDrawn(false);
+        setDrawnNumbers(response.data.random);
+      }, 10000);
+      const updated = await data.map((raf) => {
+        if (raf.id === id) {
+          return {
+            ...raf,
+            status: response.data.newRaffle[0].status,
+            client_drawn: response.data.newRaffle[0].client_drawn,
+            number_drawn: response.data.newRaffle[0].number_drawn,
+          };
+        }
+        return raf;
+      });
+      mutate(updated, false);
+      mutateGlobal(`/drawn/${id}`, {
+        id: id,
+        status: response.data.newRaffle[0].status,
+        client_drawn: response.data.newRaffle[0].client_drawn,
+        number_drawn: response.data.newRaffle[0].number_drawn,
+      });
+    } catch (error) {
       if (error.message === "Network Error") {
         alert(
           "Sem conexão com o servidor, verifique sua conexão com a internet."
@@ -291,6 +412,13 @@ export default function Admin({ info, url, configs }) {
                             {raf.number_drawn ? raf.number_drawn : 0}
                           </Text>
                         </HStack>
+                        <Text fontSize="xs" textAlign="center">
+                          Cliente:{" "}
+                          <strong>{raf.client_drawn.name_client}</strong>
+                        </Text>
+                        <Text fontSize="xs" textAlign="center">
+                          Tel: <strong>{raf.client_drawn.phone_client}</strong>
+                        </Text>
                       </Box>
                     </Flex>
                   )}
@@ -524,7 +652,7 @@ export default function Admin({ info, url, configs }) {
                       _active={{ bg: "purple.100", color: "white" }}
                       _focus={{ bg: "transparent" }}
                       _hover={{ bg: "purple.100", color: "white" }}
-                      onClick={() => setModalEdit(true)}
+                      onClick={() => handleDrawn(raf.id)}
                     >
                       Realizar Sorteio
                     </MenuItem>
@@ -548,7 +676,7 @@ export default function Admin({ info, url, configs }) {
                       _active={{ bg: "purple.100", color: "white" }}
                       _focus={{ bg: "transparent" }}
                       _hover={{ bg: "purple.100", color: "white" }}
-                      onClick={() => setModalCancel(true)}
+                      onClick={() => handleJustification(raf.id)}
                     >
                       Cancelar Sorteio
                     </MenuItem>
@@ -708,12 +836,23 @@ export default function Admin({ info, url, configs }) {
           <ModalBody>
             <FormControl isRequired>
               <FormLabel>Justificativa</FormLabel>
-              <Textarea focusBorderColor="purple.400" rows={6} resize="none" />
+              <Textarea
+                focusBorderColor="purple.400"
+                rows={6}
+                resize="none"
+                value={justification}
+                onChange={(e) => setJustification(e.target.value.toUpperCase())}
+              />
             </FormControl>
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme="purple" leftIcon={<FaTrash />}>
+            <Button
+              colorScheme="purple"
+              leftIcon={<FaTrash />}
+              isLoading={loadingJustify}
+              onClick={() => sendCancel()}
+            >
               Cancelar
             </Button>
           </ModalFooter>
@@ -770,6 +909,74 @@ export default function Admin({ info, url, configs }) {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <Modal isOpen={modalSlot} onClose={() => handleCloseDrawn()} size="lg">
+        <ModalOverlay />
+        <ModalContent borderWidth="3px" borderColor="green.400">
+          <ModalHeader>Realizando Sorteio</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={5}>
+            {drawn === true ? (
+              <>
+                <Lottie animation={Slot} width="50%" />
+                <Flex direction="column" justify="center" align="center">
+                  <Spinner size="xl" colorScheme="purple" />
+                  <Text mt={2}>Sorteando...</Text>
+                </Flex>
+              </>
+            ) : (
+              <>
+                <Lottie animation={Congrat} width="70%" />
+                <Flex direction="column" justify="center" align="center">
+                  {JSON.stringify(drawnNumber) !== "{}" ? (
+                    <>
+                      <Text mt={10} fontSize="xl">
+                        Número Sorteado: <strong>{drawnNumber.number}</strong>
+                      </Text>
+                      <Text mt={1} fontSize="md" textAlign="center">
+                        Cliente: <strong>{drawnNumber.name_client}</strong>
+                      </Text>
+                      <Text mt={1} fontSize="md" textAlign="center">
+                        Telefone: <strong>{drawnNumber.phone_client}</strong>
+                      </Text>
+                      <Text mt={1} fontSize="md" textAlign="center">
+                        Email: <strong>{drawnNumber.email_client}</strong>
+                      </Text>
+                    </>
+                  ) : (
+                    ""
+                  )}
+                </Flex>
+              </>
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      <AlertDialog isOpen={alert} onClose={() => setAlert(false)}>
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Realizar Sorteio
+            </AlertDialogHeader>
+
+            <AlertDialogBody>Deseja realizar este sorteio?</AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button
+                onClick={() => setAlert(false)}
+                colorScheme="green"
+                variant="outline"
+              >
+                Não
+              </Button>
+              <Button colorScheme="green" onClick={() => sendDrawn()} ml={3}>
+                Sim
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </>
   );
 }
