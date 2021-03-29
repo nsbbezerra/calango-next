@@ -285,14 +285,19 @@ export default function HeaderApp() {
       <Box bg="purple.400" h="40px">
         <Container maxW="6xl">
           <Flex justify="flex-end" align="center" h="40px">
-            <IconButton
-              icon={<FaWhatsapp />}
-              variant="link"
-              colorScheme="whiteAlpha"
-              color="white"
-              _focus={{ outline: "none" }}
-              fontSize="2xl"
-            />
+            <Link href="http://bit.ly/RIFAPMW" passHref>
+              <a target="_blank">
+                <IconButton
+                  icon={<FaWhatsapp />}
+                  variant="link"
+                  colorScheme="whiteAlpha"
+                  color="white"
+                  _focus={{ outline: "none" }}
+                  fontSize="2xl"
+                  mt={1}
+                />
+              </a>
+            </Link>
             <IconButton
               icon={<FaInstagram />}
               variant="link"

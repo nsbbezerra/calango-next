@@ -84,7 +84,7 @@ export default function Home({ config, raffles, url, banners }) {
           {banner.length === 0 ? (
             <Box rounded="lg" overflow="hidden">
               <ChakraImage
-                src="/img/banner.png"
+                src="/img/banner.jpg"
                 w="100%"
                 h={["15vh", "25vh", "25vh", "30vh", "30vh"]}
               />
