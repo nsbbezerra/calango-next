@@ -258,6 +258,7 @@ export default function NovoSorteio({ config }) {
   async function saveRaffle() {
     if (!thumbnail) {
       handleValidator("image", "Insira uma imagem");
+      showToast("Insira uma imagem", "warning", "Atenção");
       setModalConfirm(false);
       return false;
     }
@@ -267,11 +268,17 @@ export default function NovoSorteio({ config }) {
         "image",
         "Imagem maior que 500kb, insira uma imagem menor"
       );
+      showToast(
+        "Imagem maior que 500kb, insira uma imagem menor",
+        "warning",
+        "Atenção"
+      );
       setModalConfirm(false);
       return false;
     }
     if (raffle === "") {
       handleValidator("raffle", "Campo Obrigatório");
+      showToast("Campo Obrigatório", "warning", "Atenção");
       setModalConfirm(false);
       return false;
     }
@@ -286,6 +293,7 @@ export default function NovoSorteio({ config }) {
     }
     if (description === "") {
       handleValidator("description", "Campo Obrigatório");
+      showToast("A descrição é obrigatória", "warning", "Atenção");
       setModalConfirm(false);
       return false;
     }
@@ -315,8 +323,6 @@ export default function NovoSorteio({ config }) {
       const response = await api.post("/raffle", data);
 
       showToast(response.data.message, "success", "Sucesso");
-      showToast("Banner liberado para cadastro", "info", "Informação");
-
       setIdToBanner(response.data.id);
       setDisableBanner(true);
 
@@ -390,7 +396,13 @@ export default function NovoSorteio({ config }) {
 
         {JSON.stringify(client) === "{}" ? (
           <Grid
-            templateColumns="1fr 1fr"
+            templateColumns={[
+              "1fr",
+              "1fr 1fr",
+              "1fr 1fr",
+              "1fr 1fr",
+              "1fr 1fr",
+            ]}
             gap="20px"
             borderWidth="1px"
             p={5}

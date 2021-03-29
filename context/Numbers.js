@@ -4,9 +4,7 @@ const NumbersContext = createContext();
 
 export default function ClientProvider({ children }) {
   const [numbers, setNumbers] = useState([]);
-  useEffect(() => {
-    console.log("NUMBERS", numbers);
-  }, [numbers]);
+
   return (
     <NumbersContext.Provider value={{ numbers, setNumbers }}>
       {children}
