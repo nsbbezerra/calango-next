@@ -270,6 +270,17 @@ export default function HeaderApp() {
     <>
       <Head>
         <title>PWM Rifas | Crie sua rifa online aqui.</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Rifas Online" />
+        <meta
+          name="keywords"
+          content="rifas, rifa, sorteios, sorteio, prêmios, prêmio, ganhar, sortear, rifar, concorrer, ganhar"
+        />
+        <meta name="robots" content="index,nofollow" />
+        <meta name="author" content="Natanael Bezerra - NK Informática" />
+        <meta name="googletboot" content="index,nofollow" />
+        <meta httpEquiv="content-language" content="pt-br" />
+        <meta content="Global" name="distribution" />
       </Head>
       <Box bg="purple.400" h="40px">
         <Container maxW="6xl">
