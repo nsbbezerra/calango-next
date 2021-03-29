@@ -1007,6 +1007,6 @@ export const getStaticProps = async () => {
       raffles,
       url,
     },
-    revalidate: 30,
+    revalidate: 10,
   };
 };

@@ -334,6 +334,6 @@ export const getStaticProps = async () => {
       url: url,
       banners,
     },
-    revalidate: 30,
+    revalidate: 10,
   };
 };
