@@ -75,9 +75,9 @@ export default function Client({ info, url }) {
     }
   }
 
-  async function findNumbers(id) {
+  async function findNumbers(id, raf) {
     try {
-      const response = await api.get(`/numbersClient/${id}`);
+      const response = await api.get(`/numbersClient/${id}/raffle/${raf}`);
       setNumbers(response.data);
       setModalEdit(true);
     } catch (error) {
@@ -392,7 +392,7 @@ export default function Client({ info, url }) {
                       _active={{ bg: "purple.100", color: "white" }}
                       _focus={{ bg: "transparent" }}
                       _hover={{ bg: "purple.100", color: "white" }}
-                      onClick={() => findNumbers(raf.id_client)}
+                      onClick={() => findNumbers(raf.id_client, raf.id)}
                     >
                       Ver Meus Números
                     </MenuItem>
