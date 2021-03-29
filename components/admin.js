@@ -319,7 +319,6 @@ export default function Admin({ info, url, configs }) {
     setDrawn(true);
     try {
       const response = await api.put(`/drawn/${id}`);
-      console.log(response);
       setTimeout(() => {
         setDrawn(false);
         setDrawnNumbers(response.data.random);
@@ -365,7 +364,9 @@ export default function Admin({ info, url, configs }) {
       >
         {raffles.length === 0 ? (
           <Flex align="center" justify="center">
-            <Spinner size="xl" colorScheme="purple" />
+            <Heading fontSize="md" textAlign="center">
+              Nenhum sorteio para mostrar
+            </Heading>
           </Flex>
         ) : (
           <>
@@ -434,7 +435,7 @@ export default function Admin({ info, url, configs }) {
                     >
                       <Box
                         w="100%"
-                        bg="gray.800"
+                        bg="red.600"
                         p={3}
                         textAlign="center"
                         fontWeight="700"

@@ -19,6 +19,7 @@ import {
   InputGroup,
   InputLeftElement,
   Select,
+  Skeleton,
 } from "@chakra-ui/react";
 import {
   Breadcrumb,
@@ -34,10 +35,44 @@ import Client from "../../components/client";
 import { useClient } from "../../context/Clients";
 import api from "../../configs/axios";
 import { useRouter } from "next/router";
+import FooterAppTot from "../../components/footerTotal";
 
 export default function MeusDados({ information }) {
   const { query, isFallback } = useRouter();
   const { client, setClient } = useClient();
+
+  if (isFallback) {
+    return (
+      <>
+        <HeaderApp />
+        <Container maxW="7xl" mt={10}>
+          <Grid
+            templateColumns={[
+              "1fr",
+              "1fr",
+              "200px 1fr",
+              "200px 1fr",
+              "200px 1fr",
+            ]}
+            gap="30px"
+          >
+            <Skeleton w="200px" h="250px" rounded="lg" />
+            <Box>
+              <Skeleton w="100%" h="40px" mb={3} />
+              <Skeleton w="100%" h="40px" mb={3} />
+              <Skeleton w="100%" h="40px" mb={3} />
+              <Skeleton w="100%" h="40px" mb={3} />
+              <Skeleton w="100%" h="40px" mb={3} />
+              <Skeleton w="100%" h="40px" mb={3} />
+              <Skeleton w="100%" h="40px" mb={3} />
+            </Box>
+          </Grid>
+        </Container>
+        <FooterAppTot />
+      </>
+    );
+  }
+
   const toast = useToast();
   const [page, setPage] = useState("data");
   const [validators, setValidators] = useState([]);
@@ -60,7 +95,6 @@ export default function MeusDados({ information }) {
   const [configs, setConfigs] = useState({});
 
   useEffect(() => {
-    console.log(information);
     if (information !== null) {
       setUrl(information.url);
       setConfigs(information.configs);
@@ -686,7 +720,7 @@ export const getStaticPaths = async () => {
   });
   return {
     paths: paths,
-    fallback: false,
+    fallback: true,
   };
 };
 

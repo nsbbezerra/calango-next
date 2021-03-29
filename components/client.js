@@ -18,28 +18,81 @@ import {
   ModalHeader,
   ModalBody,
   ModalCloseButton,
-  FormControl,
-  FormLabel,
-  InputGroup,
-  Input,
-  Select,
-  InputLeftElement,
+  Spinner,
   HStack,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverHeader,
+  PopoverBody,
+  PopoverArrow,
+  PopoverCloseButton,
+  PopoverFooter,
 } from "@chakra-ui/react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { FaWhatsapp, FaUserAlt, FaArrowUp, FaIdCard } from "react-icons/fa";
-import { Slider, SliderFilledTrack, SliderThumb, SliderTrack } from "./sliders";
-import MaskedInput from "react-text-mask";
-import { ImListNumbered } from "react-icons/im";
+import {
+  FaWhatsapp,
+  FaUserAlt,
+  FaArrowUp,
+  FaSortNumericDown,
+} from "react-icons/fa";
+import Link from "next/link";
+import useFetch from "../hooks/useFetch";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import api from "../configs/axios";
 
 export default function Client({ info, url }) {
+  const { data, error } = useFetch(`/findRafflesClient/${info}`);
+
   const [modalCancel, setModalCancel] = useState(false);
   const [modalEdit, setModalEdit] = useState(false);
+  const [raffles, setRaffles] = useState([]);
+
+  const [phone, setPhone] = useState("");
+  const [numbers, setNumbers] = useState([]);
 
   useEffect(() => {
-    console.log("CLIENT", info);
-  }, [info]);
+    if (data !== undefined) {
+      setRaffles(data);
+    }
+  }, [data]);
+
+  function handlePhone(value) {
+    setPhone(value);
+    setModalCancel(true);
+  }
+
+  function handleColor(status) {
+    switch (status) {
+      case "reserved":
+        return "orange";
+      case "paid_out":
+        return "green";
+      default:
+        return "orange";
+    }
+  }
+
+  async function findNumbers(id) {
+    try {
+      const response = await api.get(`/numbersClient/${id}`);
+      setNumbers(response.data);
+      setModalEdit(true);
+    } catch (error) {
+      if (error.message === "Network Error") {
+        alert(
+          "Sem conexão com o servidor, verifique sua conexão com a internet."
+        );
+        return false;
+      }
+      let mess = !error.response.data
+        ? "Erro no cadastro do cliente"
+        : error.response.data.message;
+      showToast(mess, "error", "Erro");
+    }
+  }
 
   return (
     <>
@@ -48,469 +101,405 @@ export default function Client({ info, url }) {
         gap="30px"
         justifyContent="center"
       >
-        <Box w="220px">
-          <LinkBox
-            rounded="lg"
-            overflow="hidden"
-            w="220px"
-            bg="white"
-            shadow="lg"
-            borderWidth="1px"
-          >
-            <Flex
-              bg="blackAlpha.700"
-              position="absolute"
-              w="220px"
-              h="100%"
-              zIndex={1000}
-              justify="center"
-              align="center"
-            >
-              <Box
-                w="100%"
-                bg="red.600"
-                p={3}
-                textAlign="center"
-                fontWeight="700"
-                color="white"
-              >
-                <Text>CANCELADA</Text>
-                <Text fontSize="xs">Contate o Administrador:</Text>
-                <Button
-                  colorScheme="whatsapp"
-                  leftIcon={<FaWhatsapp />}
-                  isFullWidth
-                  size="sm"
+        {raffles.length === 0 ? (
+          <Flex align="center" justify="center">
+            <Heading fontSize="md" textAlign="center">
+              Nenhum sorteio para mostrar
+            </Heading>
+          </Flex>
+        ) : (
+          <>
+            {raffles.map((raf) => (
+              <Box w="220px" key={raf.id}>
+                <LinkBox
+                  rounded="lg"
+                  overflow="hidden"
+                  w="220px"
+                  bg="white"
+                  shadow="lg"
+                  borderWidth="1px"
                 >
-                  (63) 99999-9999
-                </Button>
-              </Box>
-            </Flex>
-            <Box w="220px" h="220px">
-              <Image
-                src="https://image.freepik.com/vetores-gratis/composicao-de-loteria-isometrica-com-dinheiro-vencedor-moedas-carro-jackpot-inscricao-rifa-instantanea-tambor-tv-bolas-loto-isoladas_1284-39090.jpg"
-                width={260}
-                height={260}
-                layout="responsive"
-                objectFit="cover"
-                alt="PMW Rifas, rifas online"
-              />
-            </Box>
-            <Slider aria-label="slider-ex-4" defaultValue={30} mt={-8}>
-              <SliderTrack bg="purple.100">
-                <SliderFilledTrack bg="purple.400" />
-              </SliderTrack>
-              <SliderThumb
-                boxSize={8}
-                borderWidth="1px"
-                borderColor="purple.100"
-                _focus={{ outline: "none" }}
-              >
-                <Text fontSize="x-small">30%</Text>
-              </SliderThumb>
-            </Slider>
-            <Box p={2} mt={-3} w="260px">
-              <Heading
-                color="purple.400"
-                fontSize="md"
-                isTruncated
-                noOfLines={1}
-                w="200px"
-              >
-                Título da Rifa Título da Rifa Título da Rifa
-              </Heading>
+                  {raf.status === "drawn" && (
+                    <Flex
+                      bg="blackAlpha.700"
+                      position="absolute"
+                      w="220px"
+                      h="100%"
+                      zIndex={1000}
+                      justify="center"
+                      align="center"
+                    >
+                      <Box
+                        w="100%"
+                        bg="green.600"
+                        p={3}
+                        textAlign="center"
+                        fontWeight="700"
+                        color="white"
+                      >
+                        <Text>FINALIZADA</Text>
+                        <HStack justify="center" mt={2}>
+                          <Text>Nº Sorteado:</Text>
+                          <Text
+                            p={2}
+                            bg="white"
+                            borderWidth="1px"
+                            borderColor="purple.400"
+                            rounded="md"
+                            color="purple.400"
+                            shadow="md"
+                          >
+                            {raf.number_drawn ? raf.number_drawn : 0}
+                          </Text>
+                        </HStack>
+                        <Text fontSize="xs" textAlign="center">
+                          Cliente:{" "}
+                          <strong>{raf.client_drawn.name_client}</strong>
+                        </Text>
+                        <Text fontSize="xs" textAlign="center">
+                          Tel: <strong>{raf.client_drawn.phone_client}</strong>
+                        </Text>
+                      </Box>
+                    </Flex>
+                  )}
+                  {raf.status === "cancel" && (
+                    <Flex
+                      bg="blackAlpha.700"
+                      position="absolute"
+                      w="220px"
+                      h="100%"
+                      zIndex={1000}
+                      justify="center"
+                      align="center"
+                    >
+                      <Box
+                        w="100%"
+                        bg="red.600"
+                        p={3}
+                        textAlign="center"
+                        fontWeight="700"
+                      >
+                        <Text mb={2} color="white">
+                          CANCELADA
+                        </Text>
 
-              <Text fontSize="xs" mt={2}>
-                Sorteio dia <strong>10/10/1010</strong> as{" "}
-                <strong>19:00</strong>
-              </Text>
-              <Flex align="center" mt={1}>
-                <Text fontWeight="300" mr={2}>
-                  R$
-                </Text>
-                <Text fontWeight="800">1000</Text>
-              </Flex>
-              <Divider mt={1} mb={1} />
-              <Flex align="center" fontSize="xs">
-                <Icon as={FaUserAlt} mr={2} />
-                <Text w="180px" isTruncated noOfLines={1}>
-                  Nome do usuário
-                </Text>
-              </Flex>
-            </Box>
-          </LinkBox>
-          <Menu placement="top">
-            <MenuButton
-              as={Button}
-              rightIcon={<FaArrowUp />}
-              colorScheme="purple"
-              isFullWidth
-              mt={2}
-              size="sm"
-            >
-              Opções
-            </MenuButton>
-            <MenuList
-              zIndex={2000}
-              shadow="lg"
-              borderWidth="2px"
-              borderColor="green.400"
-            >
-              <MenuItem
-                _active={{ bg: "purple.100", color: "white" }}
-                _focus={{ bg: "transparent" }}
-                _hover={{ bg: "purple.100", color: "white" }}
-                onClick={() => setModalEdit(true)}
-              >
-                Ver Meus Números
-              </MenuItem>
-              <MenuItem
-                _active={{ bg: "purple.100", color: "white" }}
-                _focus={{ bg: "transparent" }}
-                _hover={{ bg: "purple.100", color: "white" }}
-                onClick={() => setModalCancel(true)}
-              >
-                Dados do Administrador
-              </MenuItem>
-            </MenuList>
-          </Menu>
-        </Box>
+                        <Popover>
+                          <PopoverTrigger>
+                            <Button
+                              colorScheme="gray"
+                              size="sm"
+                              w="160px"
+                              mt={2}
+                            >
+                              Justificativa
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent _focus={{ outline: "none" }}>
+                            <PopoverArrow />
+                            <PopoverCloseButton />
+                            <PopoverHeader fontSize="xs">
+                              Justificativa
+                            </PopoverHeader>
+                            <PopoverBody fontSize="xs" fontWeight="normal">
+                              {raf.justify}
+                            </PopoverBody>
+                          </PopoverContent>
+                        </Popover>
+                      </Box>
+                    </Flex>
+                  )}
+                  {raf.status === "refused" && (
+                    <Flex
+                      bg="blackAlpha.700"
+                      position="absolute"
+                      w="220px"
+                      h="100%"
+                      zIndex={1000}
+                      justify="center"
+                      align="center"
+                    >
+                      <Box
+                        w="100%"
+                        bg="red.600"
+                        p={3}
+                        textAlign="center"
+                        fontWeight="700"
+                      >
+                        <Text mb={2} color="white">
+                          RECUSADA
+                        </Text>
+
+                        <Text fontSize="sm" color="white">
+                          Administrador:
+                        </Text>
+                        <Link
+                          href={`https://wa.me/+55${configs.admin_phone.replace(
+                            /([\u0300-\u036f]|[^0-9a-zA-Z])/g,
+                            ""
+                          )}`}
+                          passHref
+                        >
+                          <a target="_blank">
+                            <Button
+                              colorScheme="whatsapp"
+                              leftIcon={<FaWhatsapp />}
+                              size="sm"
+                              w="160px"
+                            >
+                              {configs.admin_phone}
+                            </Button>
+                          </a>
+                        </Link>
+                        <Popover>
+                          <PopoverTrigger>
+                            <Button
+                              colorScheme="gray"
+                              size="sm"
+                              w="160px"
+                              mt={2}
+                            >
+                              Justificativa
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent _focus={{ outline: "none" }}>
+                            <PopoverArrow />
+                            <PopoverCloseButton />
+                            <PopoverHeader fontSize="xs">
+                              Justificativa
+                            </PopoverHeader>
+                            <PopoverBody fontSize="xs" fontWeight="normal">
+                              {raf.justify}
+                            </PopoverBody>
+                          </PopoverContent>
+                        </Popover>
+                      </Box>
+                    </Flex>
+                  )}
+                  {raf.status === "waiting" && (
+                    <Flex
+                      bg="blackAlpha.700"
+                      position="absolute"
+                      w="220px"
+                      h="100%"
+                      zIndex={1000}
+                      justify="center"
+                      align="center"
+                    >
+                      <Box
+                        w="100%"
+                        bg="orange.400"
+                        p={3}
+                        textAlign="center"
+                        fontWeight="700"
+                      >
+                        <Text mb={2} color="white" textAlign="center">
+                          AGUARDANDO LIBERAÇÃO
+                        </Text>
+
+                        <Text fontSize="sm" color="white">
+                          Administrador:
+                        </Text>
+                        <Link
+                          href={`https://wa.me/+55${configs.admin_phone.replace(
+                            /([\u0300-\u036f]|[^0-9a-zA-Z])/g,
+                            ""
+                          )}`}
+                          passHref
+                        >
+                          <a target="_blank">
+                            <Button
+                              colorScheme="whatsapp"
+                              leftIcon={<FaWhatsapp />}
+                              size="sm"
+                              w="160px"
+                            >
+                              {configs.admin_phone}
+                            </Button>
+                          </a>
+                        </Link>
+                      </Box>
+                    </Flex>
+                  )}
+                  <Box w="220px" h="220px">
+                    <Image
+                      src={`${url}/${raf.thumbnail}`}
+                      width={260}
+                      height={260}
+                      layout="responsive"
+                      objectFit="cover"
+                      alt="PMW Rifas, rifas online"
+                    />
+                  </Box>
+                  <Box p={2} w="260px">
+                    <Heading
+                      color="purple.400"
+                      fontSize="md"
+                      isTruncated
+                      noOfLines={1}
+                      w="200px"
+                    >
+                      {raf.name}
+                    </Heading>
+
+                    <Text fontSize="xs" mt={2}>
+                      Sorteio:{" "}
+                      <strong>
+                        {format(
+                          new Date(raf.draw_date),
+                          "dd 'de' MMMM', às ' HH:mm'h'",
+                          { locale: ptBR }
+                        )}
+                      </strong>
+                    </Text>
+                    <Flex align="center" mt={1}>
+                      <Text fontWeight="300" mr={2}>
+                        R$
+                      </Text>
+                      <Text fontWeight="800">
+                        {parseFloat(raf.raffle_value).toLocaleString("pt-br", {
+                          minimumFractionDigits: 2,
+                        })}
+                      </Text>
+                    </Flex>
+                    <Divider mt={1} mb={1} />
+                    <Flex align="center" fontSize="xs">
+                      <Icon as={FaUserAlt} mr={2} />
+                      <Text w="180px" isTruncated noOfLines={1}>
+                        {raf.name_client}
+                      </Text>
+                    </Flex>
+                  </Box>
+                </LinkBox>
+                <Menu placement="top">
+                  <MenuButton
+                    as={Button}
+                    rightIcon={<FaArrowUp />}
+                    colorScheme="purple"
+                    isFullWidth
+                    mt={2}
+                    size="sm"
+                    isDisabled={raf.status === "open" ? false : true}
+                  >
+                    Opções
+                  </MenuButton>
+                  <MenuList
+                    zIndex={2000}
+                    shadow="lg"
+                    borderWidth="2px"
+                    borderColor="green.400"
+                  >
+                    <MenuItem
+                      _active={{ bg: "purple.100", color: "white" }}
+                      _focus={{ bg: "transparent" }}
+                      _hover={{ bg: "purple.100", color: "white" }}
+                      onClick={() => findNumbers(raf.id_client)}
+                    >
+                      Ver Meus Números
+                    </MenuItem>
+                    <MenuItem
+                      _active={{ bg: "purple.100", color: "white" }}
+                      _focus={{ bg: "transparent" }}
+                      _hover={{ bg: "purple.100", color: "white" }}
+                      onClick={() => handlePhone(raf.phone_client)}
+                    >
+                      Contato do Administrador
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+              </Box>
+            ))}
+          </>
+        )}
       </Grid>
 
       <Modal
         isOpen={modalCancel}
         onClose={() => setModalCancel(false)}
-        size="3xl"
+        size="sm"
         scrollBehavior="outside"
       >
         <ModalOverlay />
         <ModalContent borderWidth="3px" borderColor="green.400">
           <ModalHeader>
             <Flex align="center">
-              <Icon as={FaIdCard} />
-              <Text ml={3}>Dados do Administrador</Text>
+              <Icon as={FaWhatsapp} />
+              <Text ml={3}>Contato do Administrador</Text>
             </Flex>
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb={4}>
-            <Grid templateColumns="1fr" gap="15px">
-              <FormControl>
-                <FormLabel>Nome Completo</FormLabel>
-                <Input focusBorderColor="purple.400" isReadOnly />
-              </FormControl>
-            </Grid>
-            <Grid
-              mt={3}
-              templateColumns={[
-                "1fr",
-                "repeat(2, 1fr)",
-                "repeat(2, 1fr)",
-                "repeat(2, 1fr)",
-                "repeat(2, 1fr)",
-              ]}
-              gap="15px"
-            >
-              <FormControl>
-                <FormLabel>CPF</FormLabel>
-                <MaskedInput
-                  mask={[
-                    /[0-9]/,
-                    /\d/,
-                    /\d/,
-                    ".",
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                    ".",
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                    "-",
-                    /\d/,
-                    /\d/,
-                  ]}
-                  placeholder="CPF"
-                  render={(ref, props) => (
-                    <Input
-                      ref={ref}
-                      {...props}
-                      focusBorderColor="purple.400"
-                      isReadOnly
-                    />
-                  )}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Telefone</FormLabel>
-                <MaskedInput
-                  mask={[
-                    "(",
-                    /[0-9]/,
-                    /\d/,
-                    ")",
-                    " ",
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                    "-",
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                  ]}
-                  placeholder="Telefone"
-                  id="contact"
-                  render={(ref, props) => (
-                    <InputGroup>
-                      <InputLeftElement children={<FaWhatsapp />} />
-                      <Input
-                        placeholder="Telefone"
-                        ref={ref}
-                        {...props}
-                        focusBorderColor="purple.400"
-                        isReadOnly
-                      />
-                    </InputGroup>
-                  )}
-                />
-              </FormControl>
-            </Grid>
-            <Grid templateColumns="1fr" mt={3}>
-              <FormControl mb={3}>
-                <FormLabel>Email</FormLabel>
-                <Input
-                  focusBorderColor="purple.400"
-                  placeholder="Email"
-                  isReadOnly
-                />
-              </FormControl>
-            </Grid>
-            <Divider mt={7} mb={4} />
-            <Grid
-              templateColumns={[
-                "1fr",
-                "3fr 1fr",
-                "3fr 1fr",
-                "3fr 1fr",
-                "3fr 1fr",
-              ]}
-              gap="15px"
-            >
-              <FormControl>
-                <FormLabel>
-                  Logradouro - Rua, Avenida, Alameda, etc...
-                </FormLabel>
-                <Input focusBorderColor="purple.400" isReadOnly />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Número</FormLabel>
-                <Input focusBorderColor="purple.400" isReadOnly />
-              </FormControl>
-            </Grid>
-            <Grid
-              templateColumns={[
-                "1fr",
-                "1fr 1fr",
-                "1fr 1fr",
-                "1fr 1fr",
-                "1fr 1fr",
-              ]}
-              mt={3}
-              gap="15px"
-            >
-              <FormControl>
-                <FormLabel>Ponto de Referência</FormLabel>
-                <Input focusBorderColor="purple.400" isReadOnly />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Bairro / Distrito</FormLabel>
-                <Input focusBorderColor="purple.400" isReadOnly />
-              </FormControl>
-            </Grid>
-            <Grid
-              templateColumns={[
-                "1fr",
-                "1fr 2fr 1fr",
-                "1fr 2fr 1fr",
-                "1fr 2fr 1fr",
-                "1fr 2fr 1fr",
-              ]}
-              mt={3}
-              gap="15px"
-            >
-              <FormControl>
-                <FormLabel>CEP</FormLabel>
-                <MaskedInput
-                  mask={[
-                    /[0-9]/,
-                    /\d/,
-                    ".",
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                    "-",
-                    /\d/,
-                    /\d/,
-                    /\d/,
-                  ]}
-                  placeholder="CEP"
-                  render={(ref, props) => (
-                    <Input
-                      ref={ref}
-                      {...props}
-                      focusBorderColor={"purple.400"}
-                      isReadOnly
-                    />
-                  )}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Cidade</FormLabel>
-                <Input focusBorderColor="purple.400" isReadOnly />
-              </FormControl>
-              <FormControl>
-                <FormLabel>UF</FormLabel>
-                <Select
-                  placeholder="Selecione"
-                  variant="outline"
-                  focusBorderColor={"purple.400"}
-                  id="state"
-                  isReadOnly
-                >
-                  <option value="AC">AC</option>
-                  <option value="AL">AL</option>
-                  <option value="AP">AP</option>
-                  <option value="AM">AM</option>
-                  <option value="BA">BA</option>
-                  <option value="CE">CE</option>
-                  <option value="DF">DF</option>
-                  <option value="ES">ES</option>
-                  <option value="GO">GO</option>
-                  <option value="MA">MA</option>
-                  <option value="MT">MT</option>
-                  <option value="MS">MS</option>
-                  <option value="MG">MG</option>
-                  <option value="PA">PA</option>
-                  <option value="PB">PB</option>
-                  <option value="PR">PR</option>
-                  <option value="PE">PE</option>
-                  <option value="PI">PI</option>
-                  <option value="RJ">RJ</option>
-                  <option value="RN">RN</option>
-                  <option value="RS">RS</option>
-                  <option value="RO">RO</option>
-                  <option value="RR">RR</option>
-                  <option value="SC">SC</option>
-                  <option value="SP">SP</option>
-                  <option value="SE">SE</option>
-                  <option value="TO">TO</option>
-                </Select>
-              </FormControl>
-            </Grid>
+          <ModalBody pb={5}>
+            <Flex justify="center" align="center">
+              <Link
+                href={`https://wa.me/+55${phone.replace(
+                  /([\u0300-\u036f]|[^0-9a-zA-Z])/g,
+                  ""
+                )}`}
+                passHref
+              >
+                <a target="_blank">
+                  <Button
+                    colorScheme="whatsapp"
+                    size="lg"
+                    leftIcon={<FaWhatsapp />}
+                  >
+                    {phone}
+                  </Button>
+                </a>
+              </Link>
+            </Flex>
           </ModalBody>
         </ModalContent>
       </Modal>
 
-      <Modal
-        isOpen={modalEdit}
-        onClose={() => setModalEdit(false)}
-        size="xl"
-        scrollBehavior="outside"
-      >
+      <Modal isOpen={modalEdit} onClose={() => setModalEdit(false)} size="3xl">
         <ModalOverlay />
         <ModalContent borderWidth="3px" borderColor="green.400">
           <ModalHeader>
             <Flex align="center">
-              <Icon as={ImListNumbered} />
+              <Icon as={FaSortNumericDown} />
               <Text ml={3}>Meus Números</Text>
             </Flex>
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={5}>
-            <HStack spacing="10px">
-              <Box
-                rounded="3xl"
-                pt={1}
-                pb={1}
-                pr={3}
-                pl={3}
-                bg="orange.400"
-                color="white"
-                textAlign="center"
-              >
-                Reservado
-              </Box>
-              <Box
-                rounded="3xl"
-                pt={1}
-                pb={1}
-                pr={3}
-                pl={3}
-                bg="green.400"
-                color="white"
-                textAlign="center"
-              >
-                Pago
-              </Box>
+            <HStack spacing="20px">
+              <Flex w="150px">
+                <Box w="40px" h="20px" bg="orange.400" rounded="md" />
+                <Text fontSize="sm" ml={3}>
+                  Aguardando
+                </Text>
+              </Flex>
+              <Flex w="150px">
+                <Box w="40px" h="20px" bg="green.400" rounded="md" />
+                <Text fontSize="sm" ml={3}>
+                  Pago
+                </Text>
+              </Flex>
             </HStack>
-            <Box mt={5} p={3} borderWidth="1px" rounded="lg">
-              <Grid
-                templateColumns="repeat(auto-fit, minmax(100px, 100px))"
-                gap="20px"
-                justifyContent="center"
-              >
-                <Flex
-                  align="center"
-                  justify="center"
-                  rounded="lg"
-                  bg="orange.400"
-                  h="50px"
-                  fontSize="2xl"
-                  fontWeight="700"
-                  color="white"
-                >
-                  200
-                </Flex>
-                <Flex
-                  align="center"
-                  justify="center"
-                  rounded="lg"
-                  bg="orange.400"
-                  h="50px"
-                  fontSize="2xl"
-                  fontWeight="700"
-                  color="white"
-                >
-                  200
-                </Flex>
-                <Flex
-                  align="center"
-                  justify="center"
-                  rounded="lg"
-                  bg="orange.400"
-                  h="50px"
-                  fontSize="2xl"
-                  fontWeight="700"
-                  color="white"
-                >
-                  290
-                </Flex>
-                <Flex
-                  align="center"
-                  justify="center"
-                  rounded="lg"
-                  bg="green.400"
-                  h="50px"
-                  fontSize="2xl"
-                  fontWeight="700"
-                  color="white"
-                >
-                  500
-                </Flex>
-              </Grid>
-            </Box>
+            <Divider mt={3} mb={3} />
+            <Grid
+              templateColumns="repeat(auto-fit, minmax(80px, 80px))"
+              gap="20px"
+              justifyContent="center"
+              justifyItems="center"
+            >
+              {numbers.length === 0 ? (
+                <Spinner colorScheme="purple" size="lg" />
+              ) : (
+                <>
+                  {numbers.map((num) => (
+                    <Button
+                      isFullWidth
+                      colorScheme={handleColor(num.status)}
+                      h="40px"
+                      shadow="md"
+                    >
+                      {num.number}
+                    </Button>
+                  ))}
+                </>
+              )}
+            </Grid>
           </ModalBody>
         </ModalContent>
       </Modal>
