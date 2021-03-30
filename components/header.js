@@ -298,14 +298,19 @@ export default function HeaderApp() {
                 />
               </a>
             </Link>
-            <IconButton
-              icon={<FaInstagram />}
-              variant="link"
-              colorScheme="whiteAlpha"
-              color="white"
-              _focus={{ outline: "none" }}
-              fontSize="2xl"
-            />
+            <Link href="https://www.instagram.com/rifa_pmw/" passHref>
+              <a target="_blank">
+                <IconButton
+                  icon={<FaInstagram />}
+                  variant="link"
+                  colorScheme="whiteAlpha"
+                  color="white"
+                  _focus={{ outline: "none" }}
+                  fontSize="2xl"
+                  mt={1}
+                />
+              </a>
+            </Link>
           </Flex>
         </Container>
       </Box>
