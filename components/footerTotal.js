@@ -100,8 +100,8 @@ export default function FooterTotal() {
                 fontWeight="700"
                 mt={5}
               >
-                Aguarde o sorteio pela Loteria Federal, Cruze os dedos, Você
-                pode ser o próximo sorteado.
+                Aguarde o sorteio, Cruze os dedos, Você pode ser o próximo
+                sorteado.
               </Text>
             </Flex>
           </Grid>

@@ -40,6 +40,7 @@ import {
   StatNumber,
   FormErrorMessage,
   Image as ChakraImage,
+  Heading,
 } from "@chakra-ui/react";
 import {
   Breadcrumb,
@@ -428,700 +429,751 @@ export default function NovoSorteio({ config }) {
             </Button>
           </Grid>
         ) : (
-          <Box
-            borderWidth={["0px", "1px", "1px", "1px", "1px"]}
-            rounded="lg"
-            p={5}
-          >
-            <Grid
-              templateColumns={["1fr", "1fr", "1fr", "220px 1fr", "220px 1fr"]}
-              gap="20px"
-              justifyContent="center"
-            >
-              <FormControl
-                isRequired
-                isInvalid={
-                  validators.find((obj) => obj.path === "image") ? true : false
-                }
+          <>
+            {client.active_admin === true ? (
+              <Box
+                borderWidth={["0px", "1px", "1px", "1px", "1px"]}
+                rounded="lg"
+                p={5}
               >
-                <FormLabel>Imagem do Sorteio</FormLabel>
-                {thumbnail ? (
-                  <Box w="220px" h="220px" rounded="lg" overflow="hidden">
-                    <ChakraImage w="220px" h="220px" src={previewThumbnail} />
-                    <IconButton
-                      icon={<FaTrash />}
-                      rounded="full"
-                      colorScheme="red"
-                      mt={-20}
-                      ml="90px"
-                      shadow="dark-lg"
-                      onClick={() => removeThumbnail()}
-                    />
-                  </Box>
-                ) : (
-                  <InputFile lar={220} alt={220}>
-                    <File
-                      type="file"
-                      onChange={(event) => setThumbnail(event.target.files[0])}
-                      id="image"
-                    />
-                    <FaImage style={{ fontSize: 50, marginBottom: 20 }} />
-                    <p>Insira uma imagem 220px x 220px com no máximo 300kb</p>
-                  </InputFile>
-                )}
-                <FormErrorMessage>
-                  {validators.find((obj) => obj.path === "image")
-                    ? validators.find((obj) => obj.path === "image").message
-                    : ""}
-                </FormErrorMessage>
-              </FormControl>
-              <Box>
                 <Grid
                   templateColumns={[
                     "1fr",
-                    "3fr 1fr",
-                    "3fr 1fr",
-                    "3fr 1fr",
-                    "3fr 1fr",
+                    "1fr",
+                    "1fr",
+                    "220px 1fr",
+                    "220px 1fr",
                   ]}
                   gap="20px"
+                  justifyContent="center"
                 >
                   <FormControl
                     isRequired
                     isInvalid={
-                      validators.find((obj) => obj.path === "raffle")
+                      validators.find((obj) => obj.path === "image")
                         ? true
                         : false
                     }
                   >
-                    <FormLabel>Nome do Sorteio</FormLabel>
-                    <Input
-                      id="raffle"
-                      placeholder="Nome do Sorteio"
+                    <FormLabel>Imagem do Sorteio</FormLabel>
+                    {thumbnail ? (
+                      <Box w="220px" h="220px" rounded="lg" overflow="hidden">
+                        <ChakraImage
+                          w="220px"
+                          h="220px"
+                          src={previewThumbnail}
+                        />
+                        <IconButton
+                          icon={<FaTrash />}
+                          rounded="full"
+                          colorScheme="red"
+                          mt={-20}
+                          ml="90px"
+                          shadow="dark-lg"
+                          onClick={() => removeThumbnail()}
+                        />
+                      </Box>
+                    ) : (
+                      <InputFile lar={220} alt={220}>
+                        <File
+                          type="file"
+                          onChange={(event) =>
+                            setThumbnail(event.target.files[0])
+                          }
+                          id="image"
+                        />
+                        <FaImage style={{ fontSize: 50, marginBottom: 20 }} />
+                        <p>
+                          Insira uma imagem 220px x 220px com no máximo 300kb
+                        </p>
+                      </InputFile>
+                    )}
+                    <FormErrorMessage>
+                      {validators.find((obj) => obj.path === "image")
+                        ? validators.find((obj) => obj.path === "image").message
+                        : ""}
+                    </FormErrorMessage>
+                  </FormControl>
+                  <Box>
+                    <Grid
+                      templateColumns={[
+                        "1fr",
+                        "3fr 1fr",
+                        "3fr 1fr",
+                        "3fr 1fr",
+                        "3fr 1fr",
+                      ]}
+                      gap="20px"
+                    >
+                      <FormControl
+                        isRequired
+                        isInvalid={
+                          validators.find((obj) => obj.path === "raffle")
+                            ? true
+                            : false
+                        }
+                      >
+                        <FormLabel>Nome do Sorteio</FormLabel>
+                        <Input
+                          id="raffle"
+                          placeholder="Nome do Sorteio"
+                          focusBorderColor="purple.400"
+                          value={raffle}
+                          onChange={(e) =>
+                            setRaffle(e.target.value.toUpperCase())
+                          }
+                        />
+                        <FormErrorMessage>
+                          {validators.find((obj) => obj.path === "raffle")
+                            ? validators.find((obj) => obj.path === "raffle")
+                                .message
+                            : ""}
+                        </FormErrorMessage>
+                      </FormControl>
+                      <FormControl
+                        isRequired
+                        isInvalid={
+                          validators.find((obj) => obj.path === "qtd")
+                            ? true
+                            : false
+                        }
+                      >
+                        <FormLabel>Qtd. de Números</FormLabel>
+                        <NumberInput
+                          focusBorderColor="purple.400"
+                          id="qtd"
+                          value={qtdNumbers}
+                          onChange={(e) => setQtdNumbers(e)}
+                        >
+                          <NumberInputField />
+                          <NumberInputStepper>
+                            <NumberIncrementStepper />
+                            <NumberDecrementStepper />
+                          </NumberInputStepper>
+                        </NumberInput>
+                        <FormErrorMessage>
+                          {validators.find((obj) => obj.path === "qtd")
+                            ? validators.find((obj) => obj.path === "qtd")
+                                .message
+                            : ""}
+                        </FormErrorMessage>
+                      </FormControl>
+                    </Grid>
+                    <Grid
+                      templateColumns={[
+                        "1fr",
+                        "repeat(3, 1fr)",
+                        "repeat(3, 1fr)",
+                        "repeat(3, 1fr)",
+                        "repeat(3, 1fr)",
+                      ]}
+                      gap="20px"
+                      mt={4}
+                    >
+                      <FormControl
+                        isRequired
+                        isInvalid={
+                          validators.find((obj) => obj.path === "value")
+                            ? true
+                            : false
+                        }
+                      >
+                        <FormLabel>Valor do Sorteio (R$)</FormLabel>
+                        <NumberInput
+                          focusBorderColor="purple.400"
+                          step={0.01}
+                          id="value"
+                          value={raffleValue}
+                          onChange={(e) => setRaffleValue(e)}
+                        >
+                          <NumberInputField />
+                          <NumberInputStepper>
+                            <NumberIncrementStepper />
+                            <NumberDecrementStepper />
+                          </NumberInputStepper>
+                        </NumberInput>
+                        <FormErrorMessage>
+                          {validators.find((obj) => obj.path === "value")
+                            ? validators.find((obj) => obj.path === "value")
+                                .message
+                            : ""}
+                        </FormErrorMessage>
+                      </FormControl>
+
+                      <FormControl isRequired>
+                        <FormLabel>Data do Sorteio</FormLabel>
+                        <div className="customDatePickerWidth">
+                          <DatePicker
+                            selected={startDate}
+                            onChange={(date) => setStartDate(date)}
+                            customInput={<CustomInputPicker />}
+                            locale="pt_br"
+                            dateFormat="dd/MM/yyyy"
+                          />
+                        </div>
+                      </FormControl>
+
+                      <FormControl isRequired>
+                        <FormLabel>Hora do Sorteio</FormLabel>
+                        <div className="customDatePickerWidth">
+                          <DatePicker
+                            selected={startDate}
+                            onChange={(date) => setStartDate(date)}
+                            customInput={<CustomInputPicker />}
+                            locale="pt_br"
+                            showTimeSelect
+                            showTimeSelectOnly
+                            timeIntervals={15}
+                            timeCaption="Horário"
+                            dateFormat="h:mm aa"
+                          />
+                        </div>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid
+                      templateColumns={[
+                        "1fr",
+                        "repeat(3, 1fr)",
+                        "repeat(3, 1fr)",
+                        "repeat(3, 1fr)",
+                        "repeat(3, 1fr)",
+                      ]}
+                      gap="20px"
+                      mt={4}
+                    >
+                      <FormControl>
+                        <FormLabel>Nome do Administrador</FormLabel>
+                        <Input
+                          placeholder="Nome do Sorteio"
+                          focusBorderColor="purple.400"
+                          isReadOnly
+                          value={client.name}
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <FormLabel>Email</FormLabel>
+                        <Input
+                          placeholder="Nome do Sorteio"
+                          focusBorderColor="purple.400"
+                          isReadOnly
+                          value={client.email}
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <FormLabel>Telefone - Whatsapp</FormLabel>
+                        <MaskedInput
+                          mask={[
+                            "(",
+                            /[0-9]/,
+                            /\d/,
+                            ")",
+                            " ",
+                            /\d/,
+                            /\d/,
+                            /\d/,
+                            /\d/,
+                            /\d/,
+                            "-",
+                            /\d/,
+                            /\d/,
+                            /\d/,
+                            /\d/,
+                          ]}
+                          placeholder="Telefone"
+                          id="contact"
+                          value={client.phone}
+                          render={(ref, props) => (
+                            <InputGroup>
+                              <InputLeftElement children={<FaWhatsapp />} />
+                              <Input
+                                placeholder="Telefone"
+                                ref={ref}
+                                {...props}
+                                focusBorderColor="purple.400"
+                                isReadOnly
+                              />
+                            </InputGroup>
+                          )}
+                        />
+                      </FormControl>
+                    </Grid>
+                  </Box>
+                </Grid>
+
+                <FormControl isRequired mt={3}>
+                  <FormLabel>Dados para Pagamento:</FormLabel>
+                  <Grid
+                    templateColumns={[
+                      "1fr",
+                      "1fr",
+                      "1fr 1fr",
+                      "1fr 1fr",
+                      "1fr 1fr",
+                    ]}
+                    gap="20px"
+                  >
+                    <Box borderWidth="1px" rounded="lg">
+                      <Box p={3}>
+                        <Image
+                          src="/img/pix.svg"
+                          width={125}
+                          height={15}
+                          layout="responsive"
+                        />
+                      </Box>
+                      <Divider />
+                      <Box p={3}>
+                        <FormControl>
+                          <FormLabel>Chave Pix:</FormLabel>
+                          <Grid
+                            templateColumns={[
+                              "1fr ",
+                              "1fr 50px",
+                              "1fr 50px",
+                              "1fr 50px",
+                              "1fr 50px",
+                            ]}
+                            gap="15px"
+                          >
+                            <InputGroup>
+                              <InputLeftElement w="6rem">
+                                <Select
+                                  focusBorderColor="purple.400"
+                                  placeholder="Selecione"
+                                  variant="filled"
+                                  colorScheme="purple"
+                                  value={typeKeyPix}
+                                  onChange={(e) =>
+                                    setTypeKeyPix(e.target.value)
+                                  }
+                                  size="sm"
+                                  mt={-2}
+                                >
+                                  <option value="CPF">CPF</option>
+                                  <option value="CNPJ">CNPJ</option>
+                                  <option value="Email">Email</option>
+                                  <option value="Telefone">Telefone</option>
+                                  <option value="Aleatória">Aleatória</option>
+                                </Select>
+                              </InputLeftElement>
+                              {typeKeyPix === "CPF" && (
+                                <MaskedInput
+                                  mask={[
+                                    /[0-9]/,
+                                    /\d/,
+                                    /\d/,
+                                    ".",
+                                    /\d/,
+                                    /\d/,
+                                    /\d/,
+                                    ".",
+                                    /\d/,
+                                    /\d/,
+                                    /\d/,
+                                    "-",
+                                    /\d/,
+                                    /\d/,
+                                  ]}
+                                  value={keyPix}
+                                  onChange={(e) => setKeyPix(e.target.value)}
+                                  placeholder="CPF"
+                                  render={(ref, props) => (
+                                    <Input
+                                      ref={ref}
+                                      {...props}
+                                      focusBorderColor="purple.400"
+                                      pl="6.5rem"
+                                      size="sm"
+                                    />
+                                  )}
+                                />
+                              )}
+                              {typeKeyPix === "CNPJ" && (
+                                <MaskedInput
+                                  mask={[
+                                    /[0-9]/,
+                                    /\d/,
+                                    ".",
+                                    /\d/,
+                                    /\d/,
+                                    /\d/,
+                                    ".",
+                                    /\d/,
+                                    /\d/,
+                                    /\d/,
+                                    "/",
+                                    /\d/,
+                                    /\d/,
+                                    /\d/,
+                                    /\d/,
+                                    "-",
+                                    /\d/,
+                                    /\d/,
+                                  ]}
+                                  value={keyPix}
+                                  onChange={(e) => setKeyPix(e.target.value)}
+                                  placeholder="CNPJ"
+                                  render={(ref, props) => (
+                                    <Input
+                                      ref={ref}
+                                      {...props}
+                                      focusBorderColor="purple.400"
+                                      pl="6.5rem"
+                                      size="sm"
+                                    />
+                                  )}
+                                />
+                              )}
+                              {typeKeyPix === "Email" && (
+                                <Input
+                                  placeholder="Email"
+                                  pl="6.5rem"
+                                  focusBorderColor="purple.400"
+                                  value={keyPix}
+                                  onChange={(e) => setKeyPix(e.target.value)}
+                                  size="sm"
+                                />
+                              )}
+                              {typeKeyPix === "Telefone" && (
+                                <MaskedInput
+                                  mask={[
+                                    "(",
+                                    /[0-9]/,
+                                    /\d/,
+                                    ")",
+                                    " ",
+                                    /\d/,
+                                    /\d/,
+                                    /\d/,
+                                    /\d/,
+                                    /\d/,
+                                    "-",
+                                    /\d/,
+                                    /\d/,
+                                    /\d/,
+                                    /\d/,
+                                  ]}
+                                  value={keyPix}
+                                  onChange={(e) => setKeyPix(e.target.value)}
+                                  placeholder="Telefone"
+                                  id="contact"
+                                  render={(ref, props) => (
+                                    <Input
+                                      placeholder="Telefone"
+                                      ref={ref}
+                                      {...props}
+                                      focusBorderColor="purple.400"
+                                      pl="6.5rem"
+                                      size="sm"
+                                    />
+                                  )}
+                                />
+                              )}
+                              {typeKeyPix === "Aleatória" && (
+                                <Input
+                                  placeholder="Chave Aleatória"
+                                  pl="6.5rem"
+                                  focusBorderColor="purple.400"
+                                  value={keyPix}
+                                  onChange={(e) => setKeyPix(e.target.value)}
+                                  size="sm"
+                                />
+                              )}
+                            </InputGroup>
+                            <Tooltip label="Adicionar Chave Pix" hasArrow>
+                              <IconButton
+                                icon={<FaPlus />}
+                                colorScheme="purple"
+                                onClick={() => handlePix()}
+                                size="sm"
+                              />
+                            </Tooltip>
+                          </Grid>
+                        </FormControl>
+                        {pix.length > 0 && (
+                          <>
+                            <Divider mt={3} mb={3} />
+                            {pix.map((pi) => (
+                              <HStack key={pi.pix} spacing="10px">
+                                <Text>
+                                  {pi.type}: <strong>{pi.pix}</strong>
+                                </Text>
+                                <Tooltip label="Excluir Chave" hasArrow>
+                                  <IconButton
+                                    icon={<FaTrash />}
+                                    colorScheme="red"
+                                    size="xs"
+                                    variant="link"
+                                    onClick={() => removePix(pi.pix)}
+                                  />
+                                </Tooltip>
+                              </HStack>
+                            ))}
+                          </>
+                        )}
+                      </Box>
+                    </Box>
+                    <Box borderWidth="1px" rounded="lg">
+                      <Box p={3}>
+                        <Image
+                          src="/img/transferencia.svg"
+                          width={125}
+                          height={15}
+                          layout="responsive"
+                        />
+                      </Box>
+                      <Divider />
+                      <Box p={3}>
+                        <Grid templateColumns="1fr 1fr" gap="15px">
+                          <FormControl>
+                            <FormLabel>Banco:</FormLabel>
+                            <Input
+                              size="sm"
+                              placeholder="Banco"
+                              focusBorderColor="purple.400"
+                              value={bank}
+                              onChange={(e) => setBank(e.target.value)}
+                            />
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel>Agencia:</FormLabel>
+                            <Input
+                              size="sm"
+                              placeholder="Agencia"
+                              focusBorderColor="purple.400"
+                              value={ag}
+                              onChange={(e) => setAg(e.target.value)}
+                            />
+                          </FormControl>
+                        </Grid>
+                        <Grid
+                          mt={3}
+                          templateColumns={[
+                            "repeat(2, 1fr)",
+                            "repeat(4, 1fr)",
+                            "repeat(4, 1fr)",
+                            "repeat(4, 1fr)",
+                            "repeat(4, 1fr)",
+                          ]}
+                          gap="15px"
+                        >
+                          <FormControl>
+                            <FormLabel>Tipo:</FormLabel>
+                            <Select
+                              focusBorderColor="purple.400"
+                              value={tipoCc}
+                              onChange={(e) => setTipoCc(e.target.value)}
+                              size="sm"
+                            >
+                              <option value="Conta Corrente">
+                                Conta Corrente
+                              </option>
+                              <option value="Poupança">Poupança</option>
+                            </Select>
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel>
+                              {tipoCc === "Conta Corrente" ? "CC" : "PP"}:
+                            </FormLabel>
+                            <Input
+                              size="sm"
+                              placeholder={
+                                tipoCc === "Conta Corrente" ? "CC" : "PP"
+                              }
+                              focusBorderColor="purple.400"
+                              value={cc}
+                              onChange={(e) => setCc(e.target.value)}
+                            />
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel>Variação:</FormLabel>
+                            <Input
+                              size="sm"
+                              placeholder="Variação"
+                              focusBorderColor="purple.400"
+                              value={variation}
+                              onChange={(e) => setVariation(e.target.value)}
+                              isDisabled={
+                                tipoCc === "Conta Corrente" ? true : false
+                              }
+                            />
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel>Operação:</FormLabel>
+                            <Input
+                              size="sm"
+                              placeholder="Operação"
+                              focusBorderColor="purple.400"
+                              value={operation}
+                              onChange={(e) => setOperation(e.target.value)}
+                            />
+                          </FormControl>
+                        </Grid>
+                        <Button
+                          leftIcon={<FaPlus />}
+                          colorScheme="purple"
+                          size="sm"
+                          isFullWidth
+                          mt={2}
+                          onClick={() => handleTransfer()}
+                        >
+                          Adicionar
+                        </Button>
+                        {transfer.length > 0 && (
+                          <>
+                            <Divider mt={3} mb={3} />
+                            <Grid
+                              templateColumns="repeat(auto-fit, minmax(240px, 240px))"
+                              gap="10px"
+                              justifyContent="center"
+                            >
+                              {transfer.map((tr) => (
+                                <Box
+                                  borderWidth="1px"
+                                  rounded="lg"
+                                  key={tr.cc}
+                                  fontSize="sm"
+                                  p={2}
+                                >
+                                  <Tooltip label="Excluir Conta" hasArrow>
+                                    <IconButton
+                                      icon={<FaTrash />}
+                                      colorScheme="red"
+                                      size="xs"
+                                      variant="link"
+                                      onClick={() => removeTransfer(tr.cc)}
+                                      position="absolute"
+                                      ml={"200px"}
+                                    />
+                                  </Tooltip>
+                                  <Text>
+                                    Banco: <strong>{tr.bank}</strong>
+                                  </Text>
+                                  <Text>
+                                    Agencia: <strong>{tr.ag}</strong>
+                                  </Text>
+                                  <Text>
+                                    {tr.cc === "Poupança"
+                                      ? "Poupança"
+                                      : "Conta Corrente"}{" "}
+                                    <strong>{tr.cc}</strong>
+                                  </Text>
+                                  {tr.op !== "" && (
+                                    <Text>
+                                      Operação: <strong>{tr.op}</strong>
+                                    </Text>
+                                  )}
+                                  {tr.vr !== "" && (
+                                    <Text>
+                                      Variação: <strong>{tr.vr}</strong>
+                                    </Text>
+                                  )}
+                                </Box>
+                              ))}
+                            </Grid>
+                          </>
+                        )}
+                      </Box>
+                    </Box>
+                  </Grid>
+                </FormControl>
+                <Grid templateColumns="1fr">
+                  <FormControl
+                    isRequired
+                    mt={4}
+                    isInvalid={
+                      validators.find((obj) => obj.path === "description")
+                        ? true
+                        : false
+                    }
+                  >
+                    <FormLabel>Descrição do Sorteio</FormLabel>
+                    <Textarea
                       focusBorderColor="purple.400"
-                      value={raffle}
-                      onChange={(e) => setRaffle(e.target.value.toUpperCase())}
+                      rows={5}
+                      resize="none"
+                      value={description}
+                      onChange={(e) =>
+                        setDescription(e.target.value.toUpperCase())
+                      }
+                      id="description"
                     />
                     <FormErrorMessage>
-                      {validators.find((obj) => obj.path === "raffle")
-                        ? validators.find((obj) => obj.path === "raffle")
+                      {validators.find((obj) => obj.path === "description")
+                        ? validators.find((obj) => obj.path === "description")
                             .message
                         : ""}
                     </FormErrorMessage>
                   </FormControl>
-                  <FormControl
-                    isRequired
-                    isInvalid={
-                      validators.find((obj) => obj.path === "qtd")
-                        ? true
-                        : false
-                    }
-                  >
-                    <FormLabel>Qtd. de Números</FormLabel>
-                    <NumberInput
-                      focusBorderColor="purple.400"
-                      id="qtd"
-                      value={qtdNumbers}
-                      onChange={(e) => setQtdNumbers(e)}
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                    <FormErrorMessage>
-                      {validators.find((obj) => obj.path === "qtd")
-                        ? validators.find((obj) => obj.path === "qtd").message
-                        : ""}
-                    </FormErrorMessage>
-                  </FormControl>
                 </Grid>
-                <Grid
-                  templateColumns={[
-                    "1fr",
-                    "repeat(3, 1fr)",
-                    "repeat(3, 1fr)",
-                    "repeat(3, 1fr)",
-                    "repeat(3, 1fr)",
-                  ]}
-                  gap="20px"
-                  mt={4}
-                >
-                  <FormControl
-                    isRequired
-                    isInvalid={
-                      validators.find((obj) => obj.path === "value")
-                        ? true
-                        : false
-                    }
-                  >
-                    <FormLabel>Valor do Sorteio (R$)</FormLabel>
-                    <NumberInput
-                      focusBorderColor="purple.400"
-                      step={0.01}
-                      id="value"
-                      value={raffleValue}
-                      onChange={(e) => setRaffleValue(e)}
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                    <FormErrorMessage>
-                      {validators.find((obj) => obj.path === "value")
-                        ? validators.find((obj) => obj.path === "value").message
-                        : ""}
-                    </FormErrorMessage>
-                  </FormControl>
 
-                  <FormControl isRequired>
-                    <FormLabel>Data do Sorteio</FormLabel>
-                    <div className="customDatePickerWidth">
-                      <DatePicker
-                        selected={startDate}
-                        onChange={(date) => setStartDate(date)}
-                        customInput={<CustomInputPicker />}
-                        locale="pt_br"
-                        dateFormat="dd/MM/yyyy"
-                      />
-                    </div>
-                  </FormControl>
-
-                  <FormControl isRequired>
-                    <FormLabel>Hora do Sorteio</FormLabel>
-                    <div className="customDatePickerWidth">
-                      <DatePicker
-                        selected={startDate}
-                        onChange={(date) => setStartDate(date)}
-                        customInput={<CustomInputPicker />}
-                        locale="pt_br"
-                        showTimeSelect
-                        showTimeSelectOnly
-                        timeIntervals={15}
-                        timeCaption="Horário"
-                        dateFormat="h:mm aa"
-                      />
-                    </div>
-                  </FormControl>
-                </Grid>
+                <Divider mt={5} mb={5} />
 
                 <Grid
                   templateColumns={[
                     "1fr",
-                    "repeat(3, 1fr)",
-                    "repeat(3, 1fr)",
-                    "repeat(3, 1fr)",
-                    "repeat(3, 1fr)",
+                    "1fr 1fr",
+                    "1fr 1fr",
+                    "1fr 1fr",
+                    "1fr 1fr",
                   ]}
-                  gap="20px"
-                  mt={4}
+                  gap="15px"
+                  alignItems="center"
                 >
-                  <FormControl>
-                    <FormLabel>Nome do Administrador</FormLabel>
-                    <Input
-                      placeholder="Nome do Sorteio"
-                      focusBorderColor="purple.400"
-                      isReadOnly
-                      value={client.name}
-                    />
-                  </FormControl>
-                  <FormControl>
-                    <FormLabel>Email</FormLabel>
-                    <Input
-                      placeholder="Nome do Sorteio"
-                      focusBorderColor="purple.400"
-                      isReadOnly
-                      value={client.email}
-                    />
-                  </FormControl>
-                  <FormControl>
-                    <FormLabel>Telefone - Whatsapp</FormLabel>
-                    <MaskedInput
-                      mask={[
-                        "(",
-                        /[0-9]/,
-                        /\d/,
-                        ")",
-                        " ",
-                        /\d/,
-                        /\d/,
-                        /\d/,
-                        /\d/,
-                        /\d/,
-                        "-",
-                        /\d/,
-                        /\d/,
-                        /\d/,
-                        /\d/,
+                  <Stat>
+                    <StatLabel>Total a Pagar</StatLabel>
+                    <StatNumber>
+                      {!config
+                        ? 0
+                        : parseFloat(config.raffle_value).toLocaleString(
+                            "pt-br",
+                            {
+                              style: "currency",
+                              currency: "BRL",
+                            }
+                          )}
+                    </StatNumber>
+                  </Stat>
+                  <Flex justify="flex-end">
+                    <Button
+                      colorScheme="purple"
+                      w={[
+                        "100%",
+                        "max-content",
+                        "max-content",
+                        "max-content",
+                        "max-content",
                       ]}
-                      placeholder="Telefone"
-                      id="contact"
-                      value={client.phone}
-                      render={(ref, props) => (
-                        <InputGroup>
-                          <InputLeftElement children={<FaWhatsapp />} />
-                          <Input
-                            placeholder="Telefone"
-                            ref={ref}
-                            {...props}
-                            focusBorderColor="purple.400"
-                            isReadOnly
-                          />
-                        </InputGroup>
-                      )}
-                    />
-                  </FormControl>
+                      size="lg"
+                      leftIcon={<FaSave />}
+                      onClick={() => setModalConfirm(true)}
+                    >
+                      Salvar Sorteio
+                    </Button>
+                  </Flex>
                 </Grid>
               </Box>
-            </Grid>
-
-            <FormControl isRequired mt={3}>
-              <FormLabel>Dados para Pagamento:</FormLabel>
-              <Grid
-                templateColumns={[
-                  "1fr",
-                  "1fr",
-                  "1fr 1fr",
-                  "1fr 1fr",
-                  "1fr 1fr",
-                ]}
-                gap="20px"
-              >
-                <Box borderWidth="1px" rounded="lg">
-                  <Box p={3}>
-                    <Image
-                      src="/img/pix.svg"
-                      width={125}
-                      height={15}
-                      layout="responsive"
-                    />
-                  </Box>
-                  <Divider />
-                  <Box p={3}>
-                    <FormControl>
-                      <FormLabel>Chave Pix:</FormLabel>
-                      <Grid
-                        templateColumns={[
-                          "1fr ",
-                          "1fr 50px",
-                          "1fr 50px",
-                          "1fr 50px",
-                          "1fr 50px",
-                        ]}
-                        gap="15px"
-                      >
-                        <InputGroup>
-                          <InputLeftElement w="6rem">
-                            <Select
-                              focusBorderColor="purple.400"
-                              placeholder="Selecione"
-                              variant="filled"
-                              colorScheme="purple"
-                              value={typeKeyPix}
-                              onChange={(e) => setTypeKeyPix(e.target.value)}
-                              size="sm"
-                              mt={-2}
-                            >
-                              <option value="CPF">CPF</option>
-                              <option value="CNPJ">CNPJ</option>
-                              <option value="Email">Email</option>
-                              <option value="Telefone">Telefone</option>
-                              <option value="Aleatória">Aleatória</option>
-                            </Select>
-                          </InputLeftElement>
-                          {typeKeyPix === "CPF" && (
-                            <MaskedInput
-                              mask={[
-                                /[0-9]/,
-                                /\d/,
-                                /\d/,
-                                ".",
-                                /\d/,
-                                /\d/,
-                                /\d/,
-                                ".",
-                                /\d/,
-                                /\d/,
-                                /\d/,
-                                "-",
-                                /\d/,
-                                /\d/,
-                              ]}
-                              value={keyPix}
-                              onChange={(e) => setKeyPix(e.target.value)}
-                              placeholder="CPF"
-                              render={(ref, props) => (
-                                <Input
-                                  ref={ref}
-                                  {...props}
-                                  focusBorderColor="purple.400"
-                                  pl="6.5rem"
-                                  size="sm"
-                                />
-                              )}
-                            />
-                          )}
-                          {typeKeyPix === "CNPJ" && (
-                            <MaskedInput
-                              mask={[
-                                /[0-9]/,
-                                /\d/,
-                                ".",
-                                /\d/,
-                                /\d/,
-                                /\d/,
-                                ".",
-                                /\d/,
-                                /\d/,
-                                /\d/,
-                                "/",
-                                /\d/,
-                                /\d/,
-                                /\d/,
-                                /\d/,
-                                "-",
-                                /\d/,
-                                /\d/,
-                              ]}
-                              value={keyPix}
-                              onChange={(e) => setKeyPix(e.target.value)}
-                              placeholder="CNPJ"
-                              render={(ref, props) => (
-                                <Input
-                                  ref={ref}
-                                  {...props}
-                                  focusBorderColor="purple.400"
-                                  pl="6.5rem"
-                                  size="sm"
-                                />
-                              )}
-                            />
-                          )}
-                          {typeKeyPix === "Email" && (
-                            <Input
-                              placeholder="Email"
-                              pl="6.5rem"
-                              focusBorderColor="purple.400"
-                              value={keyPix}
-                              onChange={(e) => setKeyPix(e.target.value)}
-                              size="sm"
-                            />
-                          )}
-                          {typeKeyPix === "Telefone" && (
-                            <MaskedInput
-                              mask={[
-                                "(",
-                                /[0-9]/,
-                                /\d/,
-                                ")",
-                                " ",
-                                /\d/,
-                                /\d/,
-                                /\d/,
-                                /\d/,
-                                /\d/,
-                                "-",
-                                /\d/,
-                                /\d/,
-                                /\d/,
-                                /\d/,
-                              ]}
-                              value={keyPix}
-                              onChange={(e) => setKeyPix(e.target.value)}
-                              placeholder="Telefone"
-                              id="contact"
-                              render={(ref, props) => (
-                                <Input
-                                  placeholder="Telefone"
-                                  ref={ref}
-                                  {...props}
-                                  focusBorderColor="purple.400"
-                                  pl="6.5rem"
-                                  size="sm"
-                                />
-                              )}
-                            />
-                          )}
-                          {typeKeyPix === "Aleatória" && (
-                            <Input
-                              placeholder="Chave Aleatória"
-                              pl="6.5rem"
-                              focusBorderColor="purple.400"
-                              value={keyPix}
-                              onChange={(e) => setKeyPix(e.target.value)}
-                              size="sm"
-                            />
-                          )}
-                        </InputGroup>
-                        <Tooltip label="Adicionar Chave Pix" hasArrow>
-                          <IconButton
-                            icon={<FaPlus />}
-                            colorScheme="purple"
-                            onClick={() => handlePix()}
-                            size="sm"
-                          />
-                        </Tooltip>
-                      </Grid>
-                    </FormControl>
-                    {pix.length > 0 && (
-                      <>
-                        <Divider mt={3} mb={3} />
-                        {pix.map((pi) => (
-                          <HStack key={pi.pix} spacing="10px">
-                            <Text>
-                              {pi.type}: <strong>{pi.pix}</strong>
-                            </Text>
-                            <Tooltip label="Excluir Chave" hasArrow>
-                              <IconButton
-                                icon={<FaTrash />}
-                                colorScheme="red"
-                                size="xs"
-                                variant="link"
-                                onClick={() => removePix(pi.pix)}
-                              />
-                            </Tooltip>
-                          </HStack>
-                        ))}
-                      </>
-                    )}
-                  </Box>
-                </Box>
-                <Box borderWidth="1px" rounded="lg">
-                  <Box p={3}>
-                    <Image
-                      src="/img/transferencia.svg"
-                      width={125}
-                      height={15}
-                      layout="responsive"
-                    />
-                  </Box>
-                  <Divider />
-                  <Box p={3}>
-                    <Grid templateColumns="1fr 1fr" gap="15px">
-                      <FormControl>
-                        <FormLabel>Banco:</FormLabel>
-                        <Input
-                          size="sm"
-                          placeholder="Banco"
-                          focusBorderColor="purple.400"
-                          value={bank}
-                          onChange={(e) => setBank(e.target.value)}
-                        />
-                      </FormControl>
-                      <FormControl>
-                        <FormLabel>Agencia:</FormLabel>
-                        <Input
-                          size="sm"
-                          placeholder="Agencia"
-                          focusBorderColor="purple.400"
-                          value={ag}
-                          onChange={(e) => setAg(e.target.value)}
-                        />
-                      </FormControl>
-                    </Grid>
-                    <Grid
-                      mt={3}
-                      templateColumns={[
-                        "repeat(2, 1fr)",
-                        "repeat(4, 1fr)",
-                        "repeat(4, 1fr)",
-                        "repeat(4, 1fr)",
-                        "repeat(4, 1fr)",
-                      ]}
-                      gap="15px"
-                    >
-                      <FormControl>
-                        <FormLabel>Tipo:</FormLabel>
-                        <Select
-                          focusBorderColor="purple.400"
-                          value={tipoCc}
-                          onChange={(e) => setTipoCc(e.target.value)}
-                          size="sm"
-                        >
-                          <option value="Conta Corrente">Conta Corrente</option>
-                          <option value="Poupança">Poupança</option>
-                        </Select>
-                      </FormControl>
-                      <FormControl>
-                        <FormLabel>
-                          {tipoCc === "Conta Corrente" ? "CC" : "PP"}:
-                        </FormLabel>
-                        <Input
-                          size="sm"
-                          placeholder={
-                            tipoCc === "Conta Corrente" ? "CC" : "PP"
-                          }
-                          focusBorderColor="purple.400"
-                          value={cc}
-                          onChange={(e) => setCc(e.target.value)}
-                        />
-                      </FormControl>
-                      <FormControl>
-                        <FormLabel>Variação:</FormLabel>
-                        <Input
-                          size="sm"
-                          placeholder="Variação"
-                          focusBorderColor="purple.400"
-                          value={variation}
-                          onChange={(e) => setVariation(e.target.value)}
-                          isDisabled={
-                            tipoCc === "Conta Corrente" ? true : false
-                          }
-                        />
-                      </FormControl>
-                      <FormControl>
-                        <FormLabel>Operação:</FormLabel>
-                        <Input
-                          size="sm"
-                          placeholder="Operação"
-                          focusBorderColor="purple.400"
-                          value={operation}
-                          onChange={(e) => setOperation(e.target.value)}
-                        />
-                      </FormControl>
-                    </Grid>
-                    <Button
-                      leftIcon={<FaPlus />}
-                      colorScheme="purple"
-                      size="sm"
-                      isFullWidth
-                      mt={2}
-                      onClick={() => handleTransfer()}
-                    >
-                      Adicionar
-                    </Button>
-                    {transfer.length > 0 && (
-                      <>
-                        <Divider mt={3} mb={3} />
-                        <Grid
-                          templateColumns="repeat(auto-fit, minmax(240px, 240px))"
-                          gap="10px"
-                          justifyContent="center"
-                        >
-                          {transfer.map((tr) => (
-                            <Box
-                              borderWidth="1px"
-                              rounded="lg"
-                              key={tr.cc}
-                              fontSize="sm"
-                              p={2}
-                            >
-                              <Tooltip label="Excluir Conta" hasArrow>
-                                <IconButton
-                                  icon={<FaTrash />}
-                                  colorScheme="red"
-                                  size="xs"
-                                  variant="link"
-                                  onClick={() => removeTransfer(tr.cc)}
-                                  position="absolute"
-                                  ml={"200px"}
-                                />
-                              </Tooltip>
-                              <Text>
-                                Banco: <strong>{tr.bank}</strong>
-                              </Text>
-                              <Text>
-                                Agencia: <strong>{tr.ag}</strong>
-                              </Text>
-                              <Text>
-                                {tr.cc === "Poupança"
-                                  ? "Poupança"
-                                  : "Conta Corrente"}{" "}
-                                <strong>{tr.cc}</strong>
-                              </Text>
-                              {tr.op !== "" && (
-                                <Text>
-                                  Operação: <strong>{tr.op}</strong>
-                                </Text>
-                              )}
-                              {tr.vr !== "" && (
-                                <Text>
-                                  Variação: <strong>{tr.vr}</strong>
-                                </Text>
-                              )}
-                            </Box>
-                          ))}
-                        </Grid>
-                      </>
-                    )}
-                  </Box>
-                </Box>
-              </Grid>
-            </FormControl>
-            <Grid templateColumns="1fr">
-              <FormControl
-                isRequired
-                mt={4}
-                isInvalid={
-                  validators.find((obj) => obj.path === "description")
-                    ? true
-                    : false
-                }
-              >
-                <FormLabel>Descrição do Sorteio</FormLabel>
-                <Textarea
-                  focusBorderColor="purple.400"
-                  rows={5}
-                  resize="none"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value.toUpperCase())}
-                  id="description"
-                />
-                <FormErrorMessage>
-                  {validators.find((obj) => obj.path === "description")
-                    ? validators.find((obj) => obj.path === "description")
-                        .message
-                    : ""}
-                </FormErrorMessage>
-              </FormControl>
-            </Grid>
-
-            <Divider mt={5} mb={5} />
-
-            <Grid
-              templateColumns={[
-                "1fr",
-                "1fr 1fr",
-                "1fr 1fr",
-                "1fr 1fr",
-                "1fr 1fr",
-              ]}
-              gap="15px"
-              alignItems="center"
-            >
-              <Stat>
-                <StatLabel>Total a Pagar</StatLabel>
-                <StatNumber>
-                  {!config
-                    ? 0
-                    : parseFloat(config.raffle_value).toLocaleString("pt-br", {
-                        style: "currency",
-                        currency: "BRL",
-                      })}
-                </StatNumber>
-              </Stat>
-              <Flex justify="flex-end">
-                <Button
-                  colorScheme="purple"
-                  w={[
-                    "100%",
-                    "max-content",
-                    "max-content",
-                    "max-content",
-                    "max-content",
-                  ]}
-                  size="lg"
-                  leftIcon={<FaSave />}
-                  onClick={() => setModalConfirm(true)}
-                >
-                  Salvar Sorteio
-                </Button>
+            ) : (
+              <Flex justify="center" align="center">
+                <Heading textAlign="center" color="red.500" fontSize="xl">
+                  Você foi impedido de criar sorteios por não cumprir os{" "}
+                  <Link href="/condicoesdeuso" passHref>
+                    <a style={{ color: "blue", textDecoration: "underline" }}>
+                      Termos de Uso
+                    </a>
+                  </Link>
+                  , para mais informações entre em{" "}
+                  <Link href="/faleconosco">
+                    <a style={{ color: "blue", textDecoration: "underline" }}>
+                      Contato Conosco
+                    </a>
+                  </Link>
+                  .
+                </Heading>
               </Flex>
-            </Grid>
-          </Box>
+            )}
+          </>
         )}
       </Container>
       <FooterApp />
