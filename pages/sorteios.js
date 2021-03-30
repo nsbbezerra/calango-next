@@ -275,6 +275,69 @@ export default function Sorteios({ raffles }) {
                   </Flex>
                 )}
 
+                {raf.status === "refused" && (
+                  <Flex
+                    bg="blackAlpha.700"
+                    position="absolute"
+                    w="220px"
+                    h="100%"
+                    zIndex={1000}
+                    justify="center"
+                    align="center"
+                  >
+                    <Box
+                      w="100%"
+                      bg="gray.800"
+                      p={3}
+                      textAlign="center"
+                      fontWeight="700"
+                    >
+                      <Text mb={2} color="white">
+                        BLOQUEADA
+                      </Text>
+
+                      <Text fontSize="sm" color="white">
+                        Administrador:
+                      </Text>
+                      <Link
+                        href={`https://wa.me/+55${raf.phone_client.replace(
+                          /([\u0300-\u036f]|[^0-9a-zA-Z])/g,
+                          ""
+                        )}`}
+                        passHref
+                      >
+                        <a target="_blank">
+                          <Button
+                            colorScheme="whatsapp"
+                            leftIcon={<FaWhatsapp />}
+                            size="sm"
+                            w="160px"
+                          >
+                            {raf.phone_client}
+                          </Button>
+                        </a>
+                      </Link>
+                      <Popover>
+                        <PopoverTrigger>
+                          <Button colorScheme="gray" size="sm" w="160px" mt={2}>
+                            Justificativa
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent _focus={{ outline: "none" }}>
+                          <PopoverArrow />
+                          <PopoverCloseButton />
+                          <PopoverHeader fontSize="xs">
+                            Justificativa
+                          </PopoverHeader>
+                          <PopoverBody fontSize="xs" fontWeight="normal">
+                            {raf.justify}
+                          </PopoverBody>
+                        </PopoverContent>
+                      </Popover>
+                    </Box>
+                  </Flex>
+                )}
+
                 <Box w="220px" h="220px">
                   <Image
                     src={`${url}/${raf.thumbnail}`}

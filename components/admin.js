@@ -43,6 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
+  LinkOverlay,
 } from "@chakra-ui/react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
@@ -481,7 +482,7 @@ export default function Admin({ info, url, configs }) {
                     >
                       <Box
                         w="100%"
-                        bg="red.600"
+                        bg="gray.800"
                         p={3}
                         textAlign="center"
                         fontWeight="700"
@@ -592,16 +593,19 @@ export default function Admin({ info, url, configs }) {
                     />
                   </Box>
                   <Box p={2} w="260px">
-                    <Heading
-                      color="purple.400"
-                      fontSize="md"
-                      isTruncated
-                      noOfLines={1}
-                      w="200px"
-                    >
-                      {raf.name}
-                    </Heading>
-
+                    <Link href={`/sorteio/${raf.identify}`} passHref>
+                      <LinkOverlay>
+                        <Heading
+                          color="purple.400"
+                          fontSize="md"
+                          isTruncated
+                          noOfLines={1}
+                          w="200px"
+                        >
+                          {raf.name}
+                        </Heading>
+                      </LinkOverlay>
+                    </Link>
                     <Text fontSize="xs" mt={2}>
                       Sorteio:{" "}
                       <strong>
