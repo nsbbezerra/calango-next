@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import HeaderApp from "../../components/header";
 import {
   Box,
@@ -112,7 +112,6 @@ export default function Sorteio({ raffles, url }) {
     }
   }, [data]);
 
-  const [numbers, setNumbers] = useState([]);
   const [mynumbers, setMynumbers] = useState([]);
   const [amount, setAmount] = useState(0);
 
@@ -156,15 +155,9 @@ export default function Sorteio({ raffles, url }) {
     setRaffle(result);
   }
 
-  useEffect(() => {
+  const generate = useMemo(() => {
+    let number = [];
     if (JSON.stringify(raffle) !== "{}") {
-      generateNumbers();
-    }
-  }, [raffle]);
-
-  function generateNumbers() {
-    if (JSON.stringify(raffle) !== "{}") {
-      let number = [];
       for (let index = 0; index < parseInt(raffle.qtd_numbers); index++) {
         let info = {
           num:
@@ -174,9 +167,9 @@ export default function Sorteio({ raffles, url }) {
         };
         number.push(info);
       }
-      setNumbers(number);
     }
-  }
+    return number;
+  }, [raffle]);
 
   useEffect(() => {
     if (mynumbers.length > 0) {
@@ -555,7 +548,7 @@ export default function Sorteio({ raffles, url }) {
               gap="15px"
               justifyContent="center"
             >
-              {numbers.map((num) => (
+              {generate.map((num) => (
                 <Button
                   w="75px"
                   colorScheme="blackAlpha"

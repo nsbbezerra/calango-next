@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Grid, Flex, Box, Text, Container } from "@chakra-ui/react";
 import Image from "next/image";
 
-export default function FooterTotal() {
+function FooterTotal() {
   return (
     <>
       <Box pt={10} pb={10} bg="purple.400" mt={10}>
@@ -119,3 +120,5 @@ export default function FooterTotal() {
     </>
   );
 }
+
+export default memo(FooterTotal);

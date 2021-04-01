@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import Head from "next/head";
 import {
   Box,
@@ -52,7 +52,7 @@ import api from "../configs/axios";
 
 import { useRouter } from "next/router";
 
-export default function HeaderApp() {
+function HeaderApp() {
   const { client, setClient } = useClient();
   const toast = useToast();
   const { push } = useRouter();
@@ -1045,3 +1045,5 @@ export default function HeaderApp() {
     </>
   );
 }
+
+export default memo(HeaderApp);
